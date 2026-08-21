@@ -19,6 +19,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
+import { VerificationCode } from '@ziven/ui'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -39,47 +40,14 @@ const formState = ref({ username: '', password: '' })
 const phoneForm = ref({ phone: '', code: '' })
 
 // ---------- 验证码 ----------
-const captchaCode = ref('')
 const captcha = ref('')
-
-function genCaptcha() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let s = ''
-  for (let i = 0; i < 4; i++) {
-    s += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return s
-}
-
-function refreshCaptcha() {
-  captchaCode.value = genCaptcha()
-  captcha.value = ''
-}
-
-// ---------- 登录方式下拉（演示账号） ----------
-const presetOptions = computed(() => [
-  { label: t('login.accountDefault'), value: 'admin' },
-  { label: t('login.accountSuper'), value: 'super' },
-])
-const accountPreset = ref('admin')
-
-function onPresetChange(value) {
-  formState.value.username = value
-  formState.value.password = '123456'
-  message.success(`${value} / 123456`)
-}
+const captchaRef = ref(null)
 
 // ---------- 表单校验 ----------
 const passwordRules = computed(() => ({
-  username: [
-    { required: true, message: t('login.usernameRequired'), trigger: ['blur'] },
-  ],
-  password: [
-    { required: true, message: t('login.passwordRequired'), trigger: ['blur'] },
-  ],
-  captcha: [
-    { required: true, message: t('login.captchaRequired'), trigger: ['blur'] },
-  ],
+  username: [{ required: true, message: t('login.usernameRequired'), trigger: ['blur'] }],
+  password: [{ required: true, message: t('login.passwordRequired'), trigger: ['blur'] }],
+  captcha: [{ required: true, message: t('login.captchaRequired'), trigger: ['blur'] }],
 }))
 
 const phoneRules = computed(() => ({
@@ -87,15 +55,11 @@ const phoneRules = computed(() => ({
     { required: true, message: t('login.phoneRequired'), trigger: ['blur'] },
     { pattern: /^1\d{10}$/, message: t('login.phoneInvalid'), trigger: ['blur'] },
   ],
-  code: [
-    { required: true, message: t('login.smsCodeRequired'), trigger: ['blur'] },
-  ],
+  code: [{ required: true, message: t('login.smsCodeRequired'), trigger: ['blur'] }],
 }))
-const a = 1; 
-function a  () {};
+
 // ---------- 初始化 ----------
 onMounted(() => {
-  refreshCaptcha()
   // 默认填充演示账号
   formState.value.username = 'admin'
   formState.value.password = '123456'
@@ -109,9 +73,9 @@ onMounted(() => {
 
 // ---------- 账密登录 ----------
 async function handleLogin() {
-  if (captcha.value.toLowerCase() !== captchaCode.value.toLowerCase()) {
+  if (!captchaRef.value?.verify(captcha.value)) {
     message.error(t('login.captchaError'))
-    refreshCaptcha()
+    captchaRef.value?.refresh()
     return
   }
   loading.value = true
@@ -119,23 +83,19 @@ async function handleLogin() {
     await userStore.login(formState.value)
     if (remember.value) {
       localStorage.setItem(REMEMBER_KEY, formState.value.username)
-    }
-    else {
+    } else {
       localStorage.removeItem(REMEMBER_KEY)
     }
     message.success(t('login.success'))
     const redirect = route.query.redirect
     router.push(redirect ? String(redirect) : '/dashboard')
-  }
-  catch (err) {
+  } catch (err) {
     if (err?.biz?.code === 401) {
       message.error(t('login.failed'))
-    }
-    else {
+    } else {
       message.error(err?.message || t('error.requestFailed'))
     }
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -151,8 +111,7 @@ function handleOtherLogin() {
 
 // ---------- 验证码倒计时 ----------
 function getCode() {
-  if (codeCountdown.value > 0)
-    return
+  if (codeCountdown.value > 0) return
   if (!phoneForm.value.phone) {
     message.warning(t('login.phoneRequired'))
     return
@@ -171,8 +130,7 @@ function getCode() {
 let countdownTimer = null
 
 onBeforeUnmount(() => {
-  if (countdownTimer)
-    clearInterval(countdownTimer)
+  if (countdownTimer) clearInterval(countdownTimer)
 })
 
 // ---------- 控制栏 ----------
@@ -201,10 +159,9 @@ function makeQrCells() {
   const finder = (ox, oy) => {
     for (let i = 0; i < 7; i++) {
       for (let j = 0; j < 7; j++) {
-        const on
-          = i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)
-        if (on)
-          cells.add(`${ox + j},${oy + i}`)
+        const on =
+          i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4)
+        if (on) cells.add(`${ox + j},${oy + i}`)
       }
     }
   }
@@ -218,15 +175,12 @@ function makeQrCells() {
   }
   for (let y = 0; y < 21; y++) {
     for (let x = 0; x < 21; x++) {
-      if (cells.has(`${x},${y}`))
-        continue
-      if (x >= 7 && x <= 13 && y >= 7 && y <= 13)
-        continue
-      if (rand() < 0.42)
-        cells.add(`${x},${y}`)
+      if (cells.has(`${x},${y}`)) continue
+      if (x >= 7 && x <= 13 && y >= 7 && y <= 13) continue
+      if (rand() < 0.42) cells.add(`${x},${y}`)
     }
   }
-  return Array.from(cells).map((c) => {
+  return Array.from(cells).map(c => {
     const [x, y] = c.split(',').map(Number)
     return { key: c, x, y }
   })
@@ -245,24 +199,27 @@ const qrCells = makeQrCells()
           class="relative hidden overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 text-white md:flex md:flex-col"
         >
           <!-- 装饰光斑 -->
-          <div class="pointer-events-none absolute -left-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-          <div class="pointer-events-none absolute -bottom-28 -right-16 h-96 w-96 rounded-full bg-fuchsia-300/20 blur-3xl" />
-          <div class="pointer-events-none absolute left-1/4 top-1/2 h-52 w-52 rounded-full bg-sky-200/10 blur-2xl" />
+          <div
+            class="pointer-events-none absolute -left-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"
+          />
+          <div
+            class="pointer-events-none absolute -bottom-28 -right-16 h-96 w-96 rounded-full bg-fuchsia-300/20 blur-3xl"
+          />
+          <div
+            class="pointer-events-none absolute left-1/4 top-1/2 h-52 w-52 rounded-full bg-sky-200/10 blur-2xl"
+          />
 
           <!-- 顶部 Logo 区 -->
           <div class="relative flex items-center gap-3 p-8 lg:p-10">
-            <div
-              class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-2xl shadow-lg ring-1 ring-white/20 backdrop-blur"
-            >
-              🐌
-            </div>
             <div class="text-xl font-bold tracking-wide">
               {{ t('login.brandTitle') }}
             </div>
           </div>
 
           <!-- 中央宣传区域 -->
-          <div class="relative flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
+          <div
+            class="relative flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center"
+          >
             <!-- 产品插画：玻璃拟态数据卡片 -->
             <div class="relative mb-12 w-full max-w-sm">
               <div
@@ -270,9 +227,7 @@ const qrCells = makeQrCells()
               >
                 +12.5%
               </div>
-              <div
-                class="rounded-2xl bg-white/15 p-5 ring-1 ring-white/20 backdrop-blur"
-              >
+              <div class="rounded-2xl bg-white/15 p-5 ring-1 ring-white/20 backdrop-blur">
                 <div class="mb-4 flex items-center justify-between">
                   <span class="text-sm text-white/80">数据概览</span>
                   <span class="rounded-full bg-white/20 px-2 py-0.5 text-xs text-white">
@@ -289,7 +244,8 @@ const qrCells = makeQrCells()
                   <div class="w-6 flex-1 rounded-t bg-white/70" style="height: 90%" />
                 </div>
                 <div class="mt-3 flex justify-between text-xs text-white/50">
-                  <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                  <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span
+                  ><span>六</span><span>日</span>
                 </div>
               </div>
               <div
@@ -341,12 +297,8 @@ const qrCells = makeQrCells()
               </button>
               <template #overlay>
                 <a-menu @click="onSelectLocale">
-                  <a-menu-item key="zh-CN">
-                    简体中文
-                  </a-menu-item>
-                  <a-menu-item key="en-US">
-                    English
-                  </a-menu-item>
+                  <a-menu-item key="zh-CN"> 简体中文 </a-menu-item>
+                  <a-menu-item key="en-US"> English </a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
@@ -372,12 +324,8 @@ const qrCells = makeQrCells()
                       {{ t('header.language') }}
                     </span>
                     <a-radio-group :value="appStore.locale" size="small" @change="onLocaleRadio">
-                      <a-radio-button value="zh-CN">
-                        中
-                      </a-radio-button>
-                      <a-radio-button value="en-US">
-                        EN
-                      </a-radio-button>
+                      <a-radio-button value="zh-CN"> 中 </a-radio-button>
+                      <a-radio-button value="en-US"> EN </a-radio-button>
                     </a-radio-group>
                   </div>
                   <div class="flex items-center justify-between">
@@ -422,17 +370,6 @@ const qrCells = makeQrCells()
                   class="mt-6"
                   @finish="handleLogin"
                 >
-                  <!-- 登录方式下拉 -->
-                  <a-form-item>
-                    <a-select
-                      v-model:value="accountPreset"
-                      size="large"
-                      :options="presetOptions"
-                      :placeholder="t('login.accountPreset')"
-                      @change="onPresetChange"
-                    />
-                  </a-form-item>
-
                   <a-form-item name="username" :rules="passwordRules.username">
                     <a-input
                       v-model:value="formState.username"
@@ -470,14 +407,7 @@ const qrCells = makeQrCells()
                           <SafetyCertificateOutlined class="text-gray-300 dark:text-zinc-500" />
                         </template>
                       </a-input>
-                      <button
-                        type="button"
-                        class="flex h-10 w-24 shrink-0 cursor-pointer select-none items-center justify-center rounded-lg border border-gray-200 bg-gray-50 font-mono text-lg font-bold tracking-[0.3em] text-indigo-500 transition-colors hover:border-indigo-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-indigo-400"
-                        title="点击刷新"
-                        @click="refreshCaptcha"
-                      >
-                        {{ captchaCode }}
-                      </button>
+                      <VerificationCode ref="captchaRef" />
                     </div>
                   </a-form-item>
 

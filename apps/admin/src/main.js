@@ -24,19 +24,14 @@ renderWithQiankun({
     render(props)
     setActions(props)
   },
-  bootstrap() {
-    console.log('bootstrap')
-  },
+  bootstrap() {},
   unmount() {
-    console.log('unmount')
     if (instance) {
       instance.unmount()
       instance = null
     }
   },
-  update(props) {
-    console.log('update', props)
-  },
+  update() {},
 })
 
 if (!qiankunWindow.__POWERED_BY_QIANKUN__) {

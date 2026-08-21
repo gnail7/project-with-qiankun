@@ -5,7 +5,7 @@ import { microActions } from '@/qiankun/actions'
 
 export const useAppStore = defineStore('app', () => {
   const collapsed = ref(false)
-  const theme = ref('light')
+  const theme = ref('dark')
   // 布局模式：sidebar（侧边栏） | top（顶部）
   const layout = ref(localStorage.getItem('layout') || 'sidebar')
   const locale = ref(localStorage.getItem('locale') || 'zh-CN')
