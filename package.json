@@ -12,7 +12,12 @@
     "dev": "pnpm --parallel --filter gnail-admin --filter qiankun dev",
     "lint": "eslint . --ext .js,.ts,.vue",
     "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": "eslint --fix",
+    "*.{css,scss,json,jsonc,md,html}": "prettier --write"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.30.0",
@@ -21,6 +26,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.4",
     "eslint-plugin-vue": "^9.33.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
     "vue-eslint-parser": "^9.4.3"
