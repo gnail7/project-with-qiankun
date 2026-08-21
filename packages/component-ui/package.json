@@ -1,8 +1,8 @@
 {
   "name": "@ziven/ui",
-  "version": "1.0.0",
   "type": "module",
 
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
 
@@ -15,16 +15,16 @@
   },
 
   "peerDependencies": {
-    "vue": "^3.5.0",
-    "ant-design-vue": "^4.0.0"
+    "ant-design-vue": "^4.0.0",
+    "vue": "^3.5.0"
   },
 
   "devDependencies": {
-    "vue": "^3.5.0",
+    "@vitejs/plugin-vue": "^6.0.0",
     "ant-design-vue": "^4.0.0",
+    "typescript": "^5.0.0",
     "vite": "^7.0.0",
     "vite-plugin-dts": "^4.0.0",
-    "@vitejs/plugin-vue": "^6.0.0",
-    "typescript": "^5.0.0"
+    "vue": "^3.5.0"
   }
 }

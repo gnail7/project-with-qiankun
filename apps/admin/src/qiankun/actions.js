@@ -20,5 +20,5 @@ export const microActions = {
   // 获取主应用透传的其他 props
   getProps() {
     return _props
-  }
+  },
 }

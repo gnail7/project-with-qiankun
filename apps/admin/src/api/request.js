@@ -1,8 +1,8 @@
-import axios from 'axios'
 import { message } from 'ant-design-vue'
+import axios from 'axios'
 import i18n from '@/i18n'
 
-const t = (key) => i18n.global.t(key)
+const t = key => i18n.global.t(key)
 
 const request = axios.create({
   // 后端地址，可用环境变量 VITE_API_BASE_URL 覆盖
@@ -43,19 +43,23 @@ request.interceptors.response.use(
       if (!window.location.pathname.startsWith('/gnail-admin/login')) {
         window.location.href = '/gnail-admin/login'
       }
-    } else if (status === 403) {
+    }
+    else if (status === 403) {
       msg = t('error.forbidden')
-    } else if (status === 404) {
+    }
+    else if (status === 404) {
       msg = t('error.notFound')
-    } else if (status === 500) {
+    }
+    else if (status === 500) {
       msg = t('error.serverError')
-    } else if (error.response?.data?.message) {
+    }
+    else if (error.response?.data?.message) {
       msg = error.response.data.message
     }
 
     message.error(msg)
     return Promise.reject(error)
-  }
+  },
 )
 
 export default request

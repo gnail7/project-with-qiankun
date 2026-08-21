@@ -1,11 +1,11 @@
 <script setup>
-import { useI18n } from 'vue-i18n'
 import {
-  UserOutlined,
-  ShoppingCartOutlined,
   DollarOutlined,
   FileTextOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
 } from '@ant-design/icons-vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
@@ -19,24 +19,32 @@ const stats = [
 
 <template>
   <div>
-    <h2 class="text-2xl font-bold mb-6">{{ t('dashboard.title') }}</h2>
+    <h2 class="text-2xl font-bold mb-6">
+      {{ t('dashboard.title') }}
+    </h2>
 
     <a-row :gutter="[16, 16]">
       <a-col v-for="stat in stats" :key="stat.titleKey" :xs="24" :sm="12" :lg="6">
         <a-card hoverable>
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-gray-400 text-sm mb-2">{{ t(stat.titleKey) }}</p>
-              <p class="text-2xl font-bold">{{ stat.value }}</p>
+              <p class="text-gray-400 text-sm mb-2">
+                {{ t(stat.titleKey) }}
+              </p>
+              <p class="text-2xl font-bold">
+                {{ stat.value }}
+              </p>
             </div>
-            <component :is="stat.icon" :class="[stat.color, 'text-3xl']" />
+            <component :is="stat.icon" class="text-3xl" :class="[stat.color]" />
           </div>
         </a-card>
       </a-col>
     </a-row>
 
     <a-card :title="t('dashboard.welcome')" class="mt-4">
-      <p class="text-gray-500">{{ t('dashboard.welcomeDesc') }}</p>
+      <p class="text-gray-500">
+        {{ t('dashboard.welcomeDesc') }}
+      </p>
     </a-card>
   </div>
 </template>

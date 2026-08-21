@@ -1,60 +1,60 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
-import { globalActions } from "./qiankun/actions";
+import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { globalActions } from './qiankun/actions'
 
-const { t, locale } = useI18n();
+const { t, locale } = useI18n()
 
-const currentPath = ref(window.location.pathname);
-const isDark = ref(false);
-const appLocale = ref<string>(locale.value);
+const currentPath = ref(window.location.pathname)
+const isDark = ref(false)
+const appLocale = ref<string>(locale.value)
 
 function navigate(path: string) {
-  window.history.pushState({}, "", path);
-  currentPath.value = path;
-  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.history.pushState({}, '', path)
+  currentPath.value = path
+  window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
 function toggleTheme() {
-  isDark.value = !isDark.value;
-  const theme = isDark.value ? "dark" : "light";
-  document.documentElement.classList.toggle("dark", isDark.value);
-  globalActions.setTheme(theme);
+  isDark.value = !isDark.value
+  const theme = isDark.value ? 'dark' : 'light'
+  document.documentElement.classList.toggle('dark', isDark.value)
+  globalActions.setTheme(theme)
 }
 
 function setLocale(lang: string) {
-  locale.value = lang;
-  appLocale.value = lang;
-  localStorage.setItem("locale", lang);
-  document.documentElement.lang = lang === "zh-CN" ? "zh-CN" : "en";
+  locale.value = lang
+  appLocale.value = lang
+  localStorage.setItem('locale', lang)
+  document.documentElement.lang = lang === 'zh-CN' ? 'zh-CN' : 'en'
   // 通过 qiankun 全局状态同步给子应用
-  globalActions.setLanguage(lang);
+  globalActions.setLanguage(lang)
 }
 
 onMounted(() => {
   // 初始化时检查系统偏好
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   if (prefersDark) {
-    isDark.value = true;
-    document.documentElement.classList.add("dark");
-    globalActions.setTheme("dark");
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+    globalActions.setTheme('dark')
   }
 
-  document.documentElement.lang = locale.value === "zh-CN" ? "zh-CN" : "en";
+  document.documentElement.lang = locale.value === 'zh-CN' ? 'zh-CN' : 'en'
 
   // 监听 qiankun 全局状态变化
   globalActions.onStateChange((state, prev) => {
     if (state.theme !== prev?.theme) {
-      isDark.value = state.theme === "dark";
-      document.documentElement.classList.toggle("dark", state.theme === "dark");
+      isDark.value = state.theme === 'dark'
+      document.documentElement.classList.toggle('dark', state.theme === 'dark')
     }
     if (state.language && state.language !== prev?.language) {
-      locale.value = state.language;
-      appLocale.value = state.language;
-      document.documentElement.lang = state.language === "zh-CN" ? "zh-CN" : "en";
+      locale.value = state.language
+      appLocale.value = state.language
+      document.documentElement.lang = state.language === 'zh-CN' ? 'zh-CN' : 'en'
     }
-  }, true);
-});
+  }, true)
+})
 </script>
 
 <template>
@@ -211,6 +211,6 @@ onMounted(() => {
       v-show="currentPath.startsWith('/gnail-admin')"
       id="subapp-container"
       class="flex-1"
-    ></main>
+    />
   </div>
 </template>

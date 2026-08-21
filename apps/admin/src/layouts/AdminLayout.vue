@@ -1,48 +1,48 @@
 <script setup>
-import { computed } from "vue";
-import { useAppStore } from "@/stores/app";
-import { useUserStore } from "@/stores/user";
-import { useRouter, useRoute } from "vue-router";
-import { useI18n } from "vue-i18n";
 import {
+  BulbOutlined,
+  DashboardOutlined,
+  DownOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  DashboardOutlined,
   UserOutlined,
-  LogoutOutlined,
-  BulbOutlined,
-  DownOutlined,
-} from "@ant-design/icons-vue";
+} from '@ant-design/icons-vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
 
-const { t } = useI18n();
-const store = useAppStore();
-const userStore = useUserStore();
-const router = useRouter();
-const route = useRoute();
+const { t } = useI18n()
+const store = useAppStore()
+const userStore = useUserStore()
+const router = useRouter()
+const route = useRoute()
 
-const selectedKeys = computed(() => [route.path]);
+const selectedKeys = computed(() => [route.path])
 const openKeys = computed(() => {
-  const parts = route.path.split("/").filter(Boolean);
-  return parts.length > 1 ? ["/" + parts[0]] : [];
-});
+  const parts = route.path.split('/').filter(Boolean)
+  return parts.length > 1 ? [`/${parts[0]}`] : []
+})
 
 // 显示真实用户名，未登录时兜底显示"管理员"
 const displayName = computed(
-  () => userStore.userInfo?.username || t("header.admin")
-);
+  () => userStore.userInfo?.username || t('header.admin'),
+)
 
 const menuItems = [
-  { key: "/dashboard", icon: DashboardOutlined, label: "menu.dashboard" },
-];
+  { key: '/dashboard', icon: DashboardOutlined, label: 'menu.dashboard' },
+]
 
-const handleMenuClick = ({ key }) => {
-  router.push(key);
-};
+function handleMenuClick({ key }) {
+  router.push(key)
+}
 
-const handleLogout = () => {
-  userStore.logout();
-  router.push("/login");
-};
+function handleLogout() {
+  userStore.logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -101,22 +101,30 @@ const handleLogout = () => {
             </a-button>
             <template #overlay>
               <a-menu @click="({ key }) => store.setLocale(key)">
-                <a-menu-item key="zh-CN">{{ t('language.zhCN') }}</a-menu-item>
-                <a-menu-item key="en-US">{{ t('language.enUS') }}</a-menu-item>
+                <a-menu-item key="zh-CN">
+                  {{ t('language.zhCN') }}
+                </a-menu-item>
+                <a-menu-item key="en-US">
+                  {{ t('language.enUS') }}
+                </a-menu-item>
               </a-menu>
             </template>
           </a-dropdown>
 
           <a-tooltip :title="t('header.toggleTheme')">
             <a-button shape="circle" @click="store.toggleTheme()">
-              <template #icon><BulbOutlined /></template>
+              <template #icon>
+                <BulbOutlined />
+              </template>
             </a-button>
           </a-tooltip>
 
           <a-dropdown>
             <a-space class="cursor-pointer">
               <a-avatar size="small">
-                <template #icon><UserOutlined /></template>
+                <template #icon>
+                  <UserOutlined />
+                </template>
               </a-avatar>
               <span class="text-sm hidden sm:inline">{{ displayName }}</span>
             </a-space>

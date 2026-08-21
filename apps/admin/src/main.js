@@ -1,15 +1,15 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import Antd from 'ant-design-vue'
-import router from '@/router'
+import { createPinia } from 'pinia'
+import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
+import { createApp } from 'vue'
 import i18n from '@/i18n'
-import { renderWithQiankun, qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+import router from '@/router'
 import App from './App.vue'
+import { setActions } from './qiankun/actions.js'
 import './style.css'
-import { setActions, microActions } from './qiankun/actions.js'
 
 let instance = null
-const render = (props = {}) => {
+function render(props = {}) {
   const { container } = props
   instance = createApp(App)
   instance.use(createPinia())
@@ -36,7 +36,7 @@ renderWithQiankun({
   },
   update(props) {
     console.log('update', props)
-  }
+  },
 })
 
 if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
