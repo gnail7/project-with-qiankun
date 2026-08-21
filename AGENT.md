@@ -15,7 +15,6 @@
 
 docs/frontend-standard.md
 
-
 ## Vue规范
 
 1. 必须使用 script setup

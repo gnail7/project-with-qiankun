@@ -22,13 +22,13 @@ export const useAppStore = defineStore('app', () => {
     setLayout(layout.value === 'sidebar' ? 'top' : 'sidebar')
   }
 
-  const setLayout = (value) => {
+  const setLayout = value => {
     layout.value = value
     localStorage.setItem('layout', value)
   }
 
   /** 切换语言：写入 localStorage + 切换 vue-i18n + 同步给主应用 */
-  const setLocale = (lang) => {
+  const setLocale = lang => {
     locale.value = lang
     localStorage.setItem('locale', lang)
     i18n.global.locale.value = lang

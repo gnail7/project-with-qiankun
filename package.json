@@ -9,9 +9,20 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "pnpm --parallel --filter gnail-admin --filter qiankun dev"
+    "dev": "pnpm --parallel --filter gnail-admin --filter qiankun dev",
+    "lint": "eslint . --ext .js,.ts,.vue",
+    "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "@typescript-eslint/eslint-plugin": "^8.30.0",
+    "@typescript-eslint/parser": "^8.30.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.4",
+    "eslint-plugin-vue": "^9.33.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.5.3",
+    "vue-eslint-parser": "^9.4.3"
   }
 }

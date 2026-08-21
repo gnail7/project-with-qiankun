@@ -27,13 +27,9 @@ const openKeys = computed(() => {
 })
 
 // 显示真实用户名，未登录时兜底显示"管理员"
-const displayName = computed(
-  () => userStore.userInfo?.username || t('header.admin'),
-)
+const displayName = computed(() => userStore.userInfo?.username || t('header.admin'))
 
-const menuItems = [
-  { key: '/dashboard', icon: DashboardOutlined, label: 'menu.dashboard' },
-]
+const menuItems = [{ key: '/dashboard', icon: DashboardOutlined, label: 'menu.dashboard' }]
 
 function handleMenuClick({ key }) {
   router.push(key)
@@ -68,10 +64,7 @@ function handleLogout() {
         :open-keys="openKeys"
         @click="handleMenuClick"
       >
-        <a-menu-item
-          v-for="item in menuItems"
-          :key="item.key"
-        >
+        <a-menu-item v-for="item in menuItems" :key="item.key">
           <component :is="item.icon" />
           <span>{{ t(item.label) }}</span>
         </a-menu-item>

@@ -8,7 +8,6 @@ const { t, locale } = useI18n()
 const currentPath = ref(window.location.pathname)
 const isDark = ref(false)
 const appLocale = ref<string>(locale.value)
-
 function navigate(path: string) {
   window.history.pushState({}, '', path)
   currentPath.value = path
@@ -58,26 +57,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 transition-colors"
-  >
+  <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 transition-colors">
     <!-- 导航栏 -->
     <header
       class="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors"
     >
-      <div
-        class="max-w-6xl mx-auto flex items-center justify-between h-14 px-6"
-      >
+      <div class="max-w-6xl mx-auto flex items-center justify-between h-14 px-6">
         <div class="flex items-center gap-3">
           <span
             class="w-7 h-7 rounded-md bg-indigo-500 text-white font-bold flex items-center justify-center"
           >
             Q
           </span>
-          <span
-            class="font-bold text-zinc-900 dark:text-white transition-colors"
-          >
-            {{ t("app.name") }}
+          <span class="font-bold text-zinc-900 dark:text-white transition-colors">
+            {{ t('app.name') }}
           </span>
         </div>
 
@@ -92,7 +85,7 @@ onMounted(() => {
               "
               @click="navigate('/')"
             >
-              {{ t("app.home") }}
+              {{ t('app.home') }}
             </button>
             <button
               class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
@@ -103,7 +96,7 @@ onMounted(() => {
               "
               @click="navigate('/gnail-admin')"
             >
-              {{ t("app.adminApp") }}
+              {{ t('app.adminApp') }}
             </button>
           </nav>
 
@@ -193,24 +186,16 @@ onMounted(() => {
         >
           Q
         </div>
-        <h1
-          class="text-4xl font-extrabold text-zinc-900 dark:text-white mb-2 transition-colors"
-        >
-          {{ t("app.mfeTitle") }}
+        <h1 class="text-4xl font-extrabold text-zinc-900 dark:text-white mb-2 transition-colors">
+          {{ t('app.mfeTitle') }}
         </h1>
-        <p
-          class="text-base text-zinc-500 dark:text-zinc-400 mb-8 transition-colors"
-        >
-          {{ t("app.mfeDesc") }}
+        <p class="text-base text-zinc-500 dark:text-zinc-400 mb-8 transition-colors">
+          {{ t('app.mfeDesc') }}
         </p>
       </div>
     </main>
 
     <!-- 子应用容器 -->
-    <main
-      v-show="currentPath.startsWith('/gnail-admin')"
-      id="subapp-container"
-      class="flex-1"
-    />
+    <main v-show="currentPath.startsWith('/gnail-admin')" id="subapp-container" class="flex-1" />
   </div>
 </template>

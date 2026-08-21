@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* 使用 .dark 类切换暗色模式（由 App.vue 根据 appStore.theme 控制） */
 @custom-variant dark (&:where(.dark, .dark *));

@@ -11,9 +11,24 @@ const { t } = useI18n()
 
 const stats = [
   { titleKey: 'dashboard.users', value: '12,846', icon: UserOutlined, color: 'text-blue-500' },
-  { titleKey: 'dashboard.orders', value: '3,291', icon: ShoppingCartOutlined, color: 'text-green-500' },
-  { titleKey: 'dashboard.revenue', value: '¥68,420', icon: DollarOutlined, color: 'text-orange-500' },
-  { titleKey: 'dashboard.documents', value: '245', icon: FileTextOutlined, color: 'text-purple-500' },
+  {
+    titleKey: 'dashboard.orders',
+    value: '3,291',
+    icon: ShoppingCartOutlined,
+    color: 'text-green-500',
+  },
+  {
+    titleKey: 'dashboard.revenue',
+    value: '¥68,420',
+    icon: DollarOutlined,
+    color: 'text-orange-500',
+  },
+  {
+    titleKey: 'dashboard.documents',
+    value: '245',
+    icon: FileTextOutlined,
+    color: 'text-purple-500',
+  },
 ]
 </script>
 

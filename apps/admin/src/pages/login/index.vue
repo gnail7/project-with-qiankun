@@ -91,7 +91,8 @@ const phoneRules = computed(() => ({
     { required: true, message: t('login.smsCodeRequired'), trigger: ['blur'] },
   ],
 }))
-
+const a = 1; 
+function a  () {};
 // ---------- 初始化 ----------
 onMounted(() => {
   refreshCaptcha()

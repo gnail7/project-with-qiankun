@@ -36,7 +36,7 @@ const router = createRouter({
 })
 
 // 路由守卫：未登录跳登录页；同时根据 meta.titleKey 设置页面标题
-router.beforeEach((to) => {
+router.beforeEach(to => {
   const userStore = useUserStore()
   if (to.path !== '/login' && !userStore.token) {
     return { path: '/login', query: { redirect: to.fullPath } }

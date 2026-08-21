@@ -15,10 +15,7 @@ watchEffect(() => {
 
 // antd 主题：跟随全局暗色模式，主色改为 indigo（与 vben 风格一致）
 const antdTheme = computed(() => ({
-  algorithm:
-    appStore.theme === 'dark'
-      ? theme.darkAlgorithm
-      : theme.defaultAlgorithm,
+  algorithm: appStore.theme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
   token: {
     colorPrimary: '#6366f1',
     borderRadius: 6,
@@ -29,14 +26,13 @@ const antdTheme = computed(() => ({
 watch(
   () => i18n.global.locale.value,
   () => {
-    document.documentElement.lang
-      = i18n.global.locale.value === 'zh-CN' ? 'zh-CN' : 'en'
+    document.documentElement.lang = i18n.global.locale.value === 'zh-CN' ? 'zh-CN' : 'en'
     updateDocumentTitle(route)
   },
 )
 
 // 接收主应用下发的语言切换（qiankun 全局状态）
-microActions.onGlobalStateChange((state) => {
+microActions.onGlobalStateChange(state => {
   if (state.language && state.language !== appStore.locale) {
     appStore.setLocale(state.language)
   }

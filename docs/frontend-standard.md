@@ -1,11 +1,11 @@
 下面给你一份偏**企业级 Vue3 + TypeScript 前端项目开发规范**，结合了：
 
-* antfu 风格 ESLint
-* Vue3 Composition API
-* TypeScript 最佳实践
-* Vite 工程化
-* Monorepo 思路
-* 中后台项目经验
+- antfu 风格 ESLint
+- Vue3 Composition API
+- TypeScript 最佳实践
+- Vite 工程化
+- Monorepo 思路
+- 中后台项目经验
 
 可以直接保存为：
 
@@ -21,13 +21,13 @@ docs/frontend-development-standard.md
 
 适用技术栈：
 
-* Vue 3
-* TypeScript
-* Vite
-* Pinia
-* Vue Router
-* Axios
-* Ant Design Vue / Element Plus
+- Vue 3
+- TypeScript
+- Vite
+- Pinia
+- Vue Router
+- Axios
+- Ant Design Vue / Element Plus
 
 ---
 
@@ -37,11 +37,11 @@ docs/frontend-development-standard.md
 
 统一团队代码风格，提高：
 
-* 可读性
-* 可维护性
-* 可扩展性
-* 开发效率
-* 代码质量
+- 可读性
+- 可维护性
+- 可扩展性
+- 开发效率
+- 代码质量
 
 所有项目必须遵循本规范。
 
@@ -53,11 +53,11 @@ docs/frontend-development-standard.md
 
 项目必须：
 
-* 使用 TypeScript
-* 使用 Vue3 Composition API
-* 使用 `<script setup>`
-* 使用 ESLint 检查
-* 使用 Git 提交规范
+- 使用 TypeScript
+- 使用 Vue3 Composition API
+- 使用 `<script setup>`
+- 使用 ESLint 检查
+- 使用 Git 提交规范
 
 推荐：
 
@@ -186,12 +186,9 @@ const TOKEN_KEY = 'token'
 // 6. lifecycle
 </script>
 
-<template>
-</template>
+<template></template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
 ```
 
 ---
@@ -210,11 +207,9 @@ const user: any = {}
 
 ```ts
 interface User {
-
   id: number
 
   name: string
-
 }
 
 const user: User = {}
@@ -251,7 +246,7 @@ user
 
 ```ts
 defineProps({
-  user: Object
+  user: Object,
 })
 ```
 
@@ -259,9 +254,7 @@ defineProps({
 
 ```ts
 interface Props {
-
   user: User
-
 }
 
 defineProps<Props>()
@@ -281,9 +274,7 @@ emit('change')
 
 ```ts
 const emit = defineEmits<{
-
   change: [value: string]
-
 }>()
 ```
 
@@ -323,11 +314,9 @@ api/user.ts
 ```ts
 export function getUserList() {
   return request({
-
     url: '/user/list',
 
-    method: 'GET'
-
+    method: 'GET',
   })
 }
 ```
@@ -379,11 +368,14 @@ UserCard.vue
 CSS：
 
 ```css
-.user-card{}
+.user-card {
+}
 
-.user-card__title{}
+.user-card__title {
+}
 
-.user-card__content{}
+.user-card__content {
+}
 ```
 
 ---
@@ -393,16 +385,14 @@ CSS：
 禁止：
 
 ```css
-.button{
-
+.button {
 }
 ```
 
 推荐：
 
 ```css
-.user-page__button{
-
+.user-page__button {
 }
 ```
 
@@ -428,11 +418,9 @@ eslint.config.mjs：
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
-
   vue: true,
 
-  typescript: true
-
+  typescript: true,
 })
 ```
 
@@ -462,15 +450,15 @@ fix(login): fix token refresh
 
 类型：
 
-| 类型       | 说明    |
-| -------- | ----- |
-| feat     | 新增功能  |
-| fix      | 修复bug |
-| refactor | 重构    |
-| docs     | 文档    |
-| style    | 样式    |
-| test     | 测试    |
-| chore    | 工程配置  |
+| 类型     | 说明     |
+| -------- | -------- |
+| feat     | 新增功能 |
+| fix      | 修复bug  |
+| refactor | 重构     |
+| docs     | 文档     |
+| style    | 样式     |
+| test     | 测试     |
+| chore    | 工程配置 |
 
 ---
 
@@ -520,9 +508,7 @@ getUser()
  * 根据权限生成动态路由
  * 过滤无访问权限菜单
  */
-function generateRoutes() {
-
-}
+function generateRoutes() {}
 ```
 
 ---
@@ -533,11 +519,7 @@ function generateRoutes() {
 
 ```ts
 try {
-
-}
-catch (e) {
-
-}
+} catch (e) {}
 ```
 
 不处理。
@@ -546,9 +528,7 @@ catch (e) {
 
 ```ts
 try {
-
-}
-catch (error) {
+} catch (error) {
   console.error(error)
 }
 ```
@@ -560,8 +540,7 @@ catch (error) {
 禁止：
 
 ```ts
-const url
-  = 'http://localhost:8080'
+const url = 'http://localhost:8080'
 ```
 
 使用：
@@ -686,25 +665,25 @@ mobile复制一份utils
 
 提交前必须：
 
-* 无 ESLint error
-* 无 TypeScript error
-* 无 console.log
-* 无 unused import
-* 无 any 类型
+- 无 ESLint error
+- 无 TypeScript error
+- 无 console.log
+- 无 unused import
+- 无 any 类型
 
 ---
 
 # 22. 推荐工具链
 
-| 功能       | 工具             |
+| 功能     | 工具           |
 | -------- | -------------- |
-| 构建       | Vite           |
-| 语言       | TypeScript     |
-| 规范       | ESLint         |
-| 格式       | antfu config   |
-| 提交       | Commitlint     |
+| 构建     | Vite           |
+| 语言     | TypeScript     |
+| 规范     | ESLint         |
+| 格式     | antfu config   |
+| 提交     | Commitlint     |
 | Hooks    | Husky          |
-| 包管理      | pnpm           |
+| 包管理   | pnpm           |
 | Monorepo | pnpm workspace |
 
 ---
@@ -720,9 +699,9 @@ mobile复制一份utils
 
 不要为了：
 
-* 少写几行代码
-* 炫技
-* 过度抽象
+- 少写几行代码
+- 炫技
+- 过度抽象
 
 牺牲维护成本。
 

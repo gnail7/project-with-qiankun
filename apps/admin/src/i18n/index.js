@@ -18,9 +18,7 @@ const i18n = createI18n({
 /** 根据当前路由的 meta.titleKey 刷新 document.title */
 export function updateDocumentTitle(route) {
   const key = route?.meta?.titleKey
-  document.title = key
-    ? `${i18n.global.t(key)} - Gnail Admin`
-    : 'Gnail Admin'
+  document.title = key ? `${i18n.global.t(key)} - Gnail Admin` : 'Gnail Admin'
 }
 
 export default i18n

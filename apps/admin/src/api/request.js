@@ -11,7 +11,7 @@ const request = axios.create({
 })
 
 // 请求拦截器：自动带上 JWT
-request.interceptors.request.use((config) => {
+request.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -21,7 +21,7 @@ request.interceptors.request.use((config) => {
 
 // 响应拦截器：处理后端统一返回的 { code, message, data }
 request.interceptors.response.use(
-  (response) => {
+  response => {
     const res = response.data
     if (res && res.code === 200) {
       return res
@@ -31,7 +31,7 @@ request.interceptors.response.use(
     err.biz = res
     return Promise.reject(err)
   },
-  (error) => {
+  error => {
     // HTTP 层错误
     const status = error.response?.status
     let msg = t('error.network')
@@ -43,17 +43,13 @@ request.interceptors.response.use(
       if (!window.location.pathname.startsWith('/gnail-admin/login')) {
         window.location.href = '/gnail-admin/login'
       }
-    }
-    else if (status === 403) {
+    } else if (status === 403) {
       msg = t('error.forbidden')
-    }
-    else if (status === 404) {
+    } else if (status === 404) {
       msg = t('error.notFound')
-    }
-    else if (status === 500) {
+    } else if (status === 500) {
       msg = t('error.serverError')
-    }
-    else if (error.response?.data?.message) {
+    } else if (error.response?.data?.message) {
       msg = error.response.data.message
     }
 
