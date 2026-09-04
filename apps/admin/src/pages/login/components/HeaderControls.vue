@@ -1,16 +1,13 @@
 <script setup>
 import { message } from 'ant-design-vue'
-import {
-  AppstoreOutlined,
-  BulbOutlined,
-  GlobalOutlined,
-  SettingOutlined,
-} from '@ant-design/icons-vue'
+import { AppstoreOutlined, GlobalOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { useTheme, ThemeToggle } from '@ziven/ui'
 import { useAppStore } from '@/stores/app'
 
 const { t } = useI18n()
 const appStore = useAppStore()
+const { isDark, toggleTheme } = useTheme()
 
 function onSelectLocale({ key }) {
   appStore.setLocale(key)
@@ -34,15 +31,8 @@ function onToggleLayout() {
 
 <template>
   <div class="absolute right-6 top-6 z-20 flex items-center gap-2">
-    <!-- 主题切换 -->
-    <a-tooltip :title="t('header.toggleTheme')">
-      <button
-        class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-500 ring-1 ring-black/5 transition-colors hover:text-indigo-500 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-white/10 dark:hover:text-indigo-400"
-        @click="appStore.toggleTheme()"
-      >
-        <BulbOutlined />
-      </button>
-    </a-tooltip>
+    <!-- 主题切换（组件库 ThemeToggle，切换后刷新） -->
+    <ThemeToggle />
 
     <!-- 布局切换 -->
     <a-tooltip :title="t('login.layoutToggle')">
@@ -81,11 +71,7 @@ function onToggleLayout() {
             <span class="text-sm text-gray-600 dark:text-zinc-300">
               {{ t('header.toggleTheme') }}
             </span>
-            <a-switch
-              :checked="appStore.theme === 'dark'"
-              size="small"
-              @change="appStore.toggleTheme()"
-            />
+            <a-switch :checked="isDark" size="small" @change="toggleTheme" />
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600 dark:text-zinc-300">

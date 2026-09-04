@@ -26,7 +26,12 @@ module.exports = {
     'vue/multi-word-component-names': 'off', // 允许单单词组件名（如 login/index.vue）
     'vue/require-default-prop': 'off',
     '@typescript-eslint/no-explicit-any': 'off', // 项目现有代码使用了 any
-    'no-console': 'error', // 提交的代码不允许出现 console.log
+    'no-console': [
+      'error',
+      {
+        allow: ['error', 'warn'],
+      },
+    ],
     'no-debugger': 'error', // 不允许出现 debugger
   },
   ignorePatterns: ['node_modules/', 'dist/', '.pnpm-store/', '.vite/', 'public/', 'coverage/'],

@@ -2,6 +2,7 @@ import Antd from 'ant-design-vue'
 import { createPinia } from 'pinia'
 import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
 import { createApp } from 'vue'
+import { permission } from '@/directives/permission'
 import i18n from '@/i18n'
 import router from '@/router'
 import App from './App.vue'
@@ -16,6 +17,7 @@ function render(props = {}) {
   instance.use(router)
   instance.use(Antd)
   instance.use(i18n)
+  instance.directive('permission', permission)
   instance.mount(container ? container.querySelector('#app') : '#app')
 }
 

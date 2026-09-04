@@ -5,17 +5,12 @@ import { microActions } from '@/qiankun/actions'
 
 export const useAppStore = defineStore('app', () => {
   const collapsed = ref(false)
-  const theme = ref('dark')
   // 布局模式：sidebar（侧边栏） | top（顶部）
   const layout = ref(localStorage.getItem('layout') || 'sidebar')
   const locale = ref(localStorage.getItem('locale') || 'zh-CN')
 
   const toggleCollapsed = () => {
     collapsed.value = !collapsed.value
-  }
-
-  const toggleTheme = () => {
-    theme.value = theme.value === 'light' ? 'dark' : 'light'
   }
 
   const toggleLayout = () => {
@@ -37,11 +32,9 @@ export const useAppStore = defineStore('app', () => {
 
   return {
     collapsed,
-    theme,
     layout,
     locale,
     toggleCollapsed,
-    toggleTheme,
     toggleLayout,
     setLayout,
     setLocale,

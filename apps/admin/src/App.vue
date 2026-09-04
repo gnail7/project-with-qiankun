@@ -1,7 +1,8 @@
 <script setup>
 import { theme } from 'ant-design-vue'
-import { computed, watch, watchEffect } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTheme } from '@ziven/ui'
 import i18n, { updateDocumentTitle } from '@/i18n'
 import { microActions } from '@/qiankun/actions'
 import { useAppStore } from '@/stores/app'
@@ -9,13 +10,13 @@ import { useAppStore } from '@/stores/app'
 const appStore = useAppStore()
 const route = useRoute()
 
-watchEffect(() => {
-  document.documentElement.classList.toggle('dark', appStore.theme === 'dark')
-})
+// 主题统一由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换即刷新）
+const { isDark, initTheme } = useTheme()
+initTheme()
 
-// antd 主题：跟随全局暗色模式，主色改为 indigo（与 vben 风格一致）
+// antd 主题：跟随主题，主色改为 indigo（与 vben 风格一致）
 const antdTheme = computed(() => ({
-  algorithm: appStore.theme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+  algorithm: isDark.value ? theme.darkAlgorithm : theme.defaultAlgorithm,
   token: {
     colorPrimary: '#6366f1',
     borderRadius: 6,

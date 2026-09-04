@@ -12,31 +12,47 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { usePermissionStore } from '@/stores/permission'
+import { resetDynamicRoutes } from '@/router'
 import { useUserStore } from '@/stores/user'
+import { useTheme } from '@ziven/ui'
+import SideMenu from './components/SideMenu.vue'
 
 const { t } = useI18n()
 const store = useAppStore()
 const userStore = useUserStore()
+const permissionStore = usePermissionStore()
 const router = useRouter()
 const route = useRoute()
 
-const selectedKeys = computed(() => [route.path])
+// 主题来自组件库 useTheme（localStorage 持久化，默认 dark）
+const { isDark, toggleTheme } = useTheme()
+const antdSiderTheme = computed(() => (isDark.value ? 'dark' : 'light'))
+
+// 仪表盘固定在首位，其后为权限过滤后的动态菜单
+const menus = computed(() => [
+  {
+    path: '/dashboard',
+    titleKey: 'menu.dashboard',
+    icon: DashboardOutlined,
+  },
+  ...permissionStore.menus,
+])
+
+const displayName = computed(
+  () => userStore.userInfo?.nickName || userStore.userInfo?.userName || t('header.admin'),
+)
+
 const openKeys = computed(() => {
-  const parts = route.path.split('/').filter(Boolean)
-  return parts.length > 1 ? [`/${parts[0]}`] : []
+  return permissionStore.menus
+    .filter(item => item.children?.length && route.path.startsWith(item.path))
+    .map(item => item.path)
 })
-
-// 显示真实用户名，未登录时兜底显示"管理员"
-const displayName = computed(() => userStore.userInfo?.username || t('header.admin'))
-
-const menuItems = [{ key: '/dashboard', icon: DashboardOutlined, label: 'menu.dashboard' }]
-
-function handleMenuClick({ key }) {
-  router.push(key)
-}
 
 function handleLogout() {
   userStore.logout()
+  permissionStore.reset()
+  resetDynamicRoutes()
   router.push('/login')
 }
 </script>
@@ -45,7 +61,7 @@ function handleLogout() {
   <a-layout class="min-h-screen h-full">
     <a-layout-sider
       v-model:collapsed="store.collapsed"
-      :theme="store.theme"
+      :theme="antdSiderTheme"
       collapsible
       class="!overflow-auto !h-screen !fixed !left-0 !top-0 !z-10"
       breakpoint="lg"
@@ -57,18 +73,7 @@ function handleLogout() {
         <span v-show="!store.collapsed" class="ml-2">Gnail Admin</span>
       </div>
 
-      <a-menu
-        :theme="store.theme"
-        mode="inline"
-        :selected-keys="selectedKeys"
-        :open-keys="openKeys"
-        @click="handleMenuClick"
-      >
-        <a-menu-item v-for="item in menuItems" :key="item.key">
-          <component :is="item.icon" />
-          <span>{{ t(item.label) }}</span>
-        </a-menu-item>
-      </a-menu>
+      <SideMenu :menus="menus" :theme="antdSiderTheme" :default-open-keys="openKeys" />
     </a-layout-sider>
 
     <a-layout
@@ -76,7 +81,7 @@ function handleLogout() {
       class="transition-all duration-200"
     >
       <a-layout-header
-        :theme="store.theme"
+        :theme="antdSiderTheme"
         class="!px-4 flex items-center justify-between sticky top-0 z-10 !bg-white dark:!bg-gray-900 shadow-sm"
       >
         <component
@@ -86,7 +91,6 @@ function handleLogout() {
         />
 
         <a-space>
-          <!-- 语言切换 -->
           <a-dropdown>
             <a-button size="small">
               {{ store.locale === 'zh-CN' ? t('language.zhCN') : t('language.enUS') }}
@@ -94,18 +98,14 @@ function handleLogout() {
             </a-button>
             <template #overlay>
               <a-menu @click="({ key }) => store.setLocale(key)">
-                <a-menu-item key="zh-CN">
-                  {{ t('language.zhCN') }}
-                </a-menu-item>
-                <a-menu-item key="en-US">
-                  {{ t('language.enUS') }}
-                </a-menu-item>
+                <a-menu-item key="zh-CN">{{ t('language.zhCN') }}</a-menu-item>
+                <a-menu-item key="en-US">{{ t('language.enUS') }}</a-menu-item>
               </a-menu>
             </template>
           </a-dropdown>
 
           <a-tooltip :title="t('header.toggleTheme')">
-            <a-button shape="circle" @click="store.toggleTheme()">
+            <a-button shape="circle" @click="toggleTheme">
               <template #icon>
                 <BulbOutlined />
               </template>
@@ -134,7 +134,7 @@ function handleLogout() {
       </a-layout-header>
 
       <a-layout-content
-        class="w-full h-full m-4 p-6 bg-white dark:bg-gray-800 rounded-lg min-h-[calc(100vh-112px)]"
+        class="m-4 p-6 bg-white dark:bg-gray-800 rounded-lg min-h-[calc(100vh-112px)]"
       >
         <router-view />
       </a-layout-content>

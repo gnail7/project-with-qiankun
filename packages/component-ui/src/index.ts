@@ -1,2 +1,5 @@
-// @ziven/ui 组件库统一出口
-export { default as VerificationCode } from './components/verification-code/VerificationCode.vue'
+export * from './components/BasicTable'
+export * from './components/SearchContainer'
+export * from './components/ThemeToggle'
+export * from './components/VerificationCode'
+export * from './theme'
