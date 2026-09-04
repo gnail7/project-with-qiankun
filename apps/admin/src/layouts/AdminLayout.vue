@@ -61,7 +61,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <a-layout class="min-h-screen h-full">
+  <a-layout class="h-full">
     <a-layout-sider
       v-model:collapsed="store.collapsed"
       :theme="antdSiderTheme"
@@ -137,7 +137,7 @@ function handleLogout() {
       </a-layout-header>
 
       <a-layout-content
-        class="m-4 p-6 bg-white dark:bg-[#0a0a0a] rounded-lg min-h-[calc(100vh-112px)]"
+        class="m-4 p-6 bg-white dark:bg-[#0a0a0a] rounded-lg flex-1 min-h-0 overflow-auto"
       >
         <router-view />
       </a-layout-content>

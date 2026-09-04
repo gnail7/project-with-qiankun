@@ -1,9 +1,9 @@
 <script setup>
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { AppstoreOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BasicTable, SearchContainer } from '@ziven/ui'
+import { BasicTable, OpButton, SearchContainer } from '@ziven/ui'
 import { deleteRole, getRolePage } from '@/api/role'
 import { ACCOUNT_STATUS, PERMISSIONS } from '@/constants'
 import AssignMenuModal from './components/AssignMenuModal.vue'
@@ -72,8 +72,8 @@ async function load() {
       pageNum: page.value,
       pageSize: pageSize.value,
     })
-    list.value = res.data.records || []
-    total.value = res.data.total || 0
+    list.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }
@@ -139,6 +139,7 @@ onMounted(load)
     <BasicTable
       v-model:page="page"
       v-model:page-size="pageSize"
+      row-key="roleId"
       :columns="columns"
       :data="list"
       :loading="loading"
@@ -147,12 +148,13 @@ onMounted(load)
       @refresh="load"
     >
       <template #toolbar>
-        <a-button v-permission="PERMISSIONS.ROLE_ADD" type="primary" @click="openCreate">
-          <template #icon>
-            <PlusOutlined />
-          </template>
-          {{ t('system.role.add') }}
-        </a-button>
+        <OpButton
+          v-permission="PERMISSIONS.ROLE_ADD"
+          action="add"
+          variant="solid"
+          :label="t('system.role.add')"
+          @click="openCreate"
+        />
       </template>
 
       <template #status="{ record }">
@@ -163,31 +165,25 @@ onMounted(load)
 
       <template #action="{ record }">
         <a-space :size="0">
-          <a-button
+          <OpButton
             v-permission="PERMISSIONS.ROLE_EDIT"
-            type="link"
-            size="small"
+            action="edit"
+            :label="t('common.edit')"
             @click="openEdit(record)"
-          >
-            {{ t('common.edit') }}
-          </a-button>
-          <a-button
+          />
+          <OpButton
             v-permission="PERMISSIONS.ROLE_ASSIGN_MENU"
-            type="link"
-            size="small"
+            action="assignMenu"
+            :icon="AppstoreOutlined"
+            :label="t('system.role.assignMenu')"
             @click="openAssignMenu(record)"
-          >
-            {{ t('system.role.assignMenu') }}
-          </a-button>
-          <a-button
+          />
+          <OpButton
             v-permission="PERMISSIONS.ROLE_REMOVE"
-            type="link"
-            size="small"
-            danger
+            action="delete"
+            :label="t('common.delete')"
             @click="handleDelete(record)"
-          >
-            {{ t('common.delete') }}
-          </a-button>
+          />
         </a-space>
       </template>
     </BasicTable>

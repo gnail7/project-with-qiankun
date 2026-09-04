@@ -39,21 +39,21 @@ const rules = computed(() => ({
 // ---------- 登录方式下拉（演示账号） ----------
 const presetOptions = computed(() => [
   { label: t('login.accountDefault'), value: 'admin' },
-  { label: t('login.accountSuper'), value: 'super' },
+  { label: t('login.accountSuper'), value: 'super admin' },
 ])
 const accountPreset = ref('admin')
 
 function onPresetChange(value) {
   formState.value.username = value
-  formState.value.password = '123456'
-  message.success(`${value} / 123456`)
+  formState.value.password = 'admin123'
+  message.success(`${value} / admin123`)
 }
 
 // ---------- 初始化 ----------
 onMounted(() => {
   // 默认填充演示账号
   formState.value.username = 'admin'
-  formState.value.password = '123456'
+  formState.value.password = 'admin123'
   // 记住我
   const saved = localStorage.getItem(REMEMBER_KEY)
   if (saved) {

@@ -1,9 +1,9 @@
 <script setup>
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { KeyOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BasicTable, SearchContainer } from '@ziven/ui'
+import { BasicTable, OpButton, SearchContainer } from '@ziven/ui'
 import { deleteUser, getUserPage } from '@/api/user'
 import { ACCOUNT_STATUS, PERMISSIONS, USER_SEX } from '@/constants'
 import AssignRoleModal from './components/AssignRoleModal.vue'
@@ -58,7 +58,6 @@ const searchSchemas = computed(() => [
 ])
 
 const columns = computed(() => [
-  { key: 'userId', title: t('system.user.id'), dataIndex: 'userId', width: 80 },
   { key: 'userName', title: t('system.user.userName'), dataIndex: 'userName' },
   { key: 'nickName', title: t('system.user.nickName'), dataIndex: 'nickName' },
   { key: 'phone', title: t('system.user.phone'), dataIndex: 'phone' },
@@ -73,9 +72,9 @@ const columns = computed(() => [
     key: 'createTime',
     title: t('system.user.createTime'),
     dataIndex: 'createTime',
-    width: 180,
+    width: 150,
   },
-  { key: 'action', title: t('common.action'), slot: 'action', width: 250 },
+  { key: 'action', title: t('common.action'), slot: 'action', width: 200 },
 ])
 
 async function load() {
@@ -86,8 +85,8 @@ async function load() {
       pageNum: page.value,
       pageSize: pageSize.value,
     })
-    list.value = res.data.records || []
-    total.value = res.data.total || 0
+    list.value = res.records || []
+    total.value = res.total || 0
   } finally {
     loading.value = false
   }
@@ -158,6 +157,7 @@ onMounted(load)
     <BasicTable
       v-model:page="page"
       v-model:page-size="pageSize"
+      row-key="userId"
       :columns="columns"
       :data="list"
       :loading="loading"
@@ -166,12 +166,13 @@ onMounted(load)
       @refresh="load"
     >
       <template #toolbar>
-        <a-button v-permission="PERMISSIONS.USER_ADD" type="primary" @click="openCreate">
-          <template #icon>
-            <PlusOutlined />
-          </template>
-          {{ t('system.user.add') }}
-        </a-button>
+        <OpButton
+          v-permission="PERMISSIONS.USER_ADD"
+          action="add"
+          variant="solid"
+          :label="t('system.user.add')"
+          @click="openCreate"
+        />
       </template>
 
       <template #status="{ record }">
@@ -182,39 +183,32 @@ onMounted(load)
 
       <template #action="{ record }">
         <a-space :size="0">
-          <a-button
+          <OpButton
             v-permission="PERMISSIONS.USER_EDIT"
-            type="link"
-            size="small"
+            action="edit"
+            :label="t('common.edit')"
             @click="openEdit(record)"
-          >
-            {{ t('common.edit') }}
-          </a-button>
-          <a-button
+          />
+          <OpButton
             v-permission="PERMISSIONS.USER_ASSIGN_ROLE"
-            type="link"
-            size="small"
+            action="assignRole"
+            :icon="TeamOutlined"
+            :label="t('system.user.assignRole')"
             @click="openAssignRole(record)"
-          >
-            {{ t('system.user.assignRole') }}
-          </a-button>
-          <a-button
+          />
+          <OpButton
             v-permission="PERMISSIONS.USER_RESET_PWD"
-            type="link"
-            size="small"
+            action="resetPwd"
+            :icon="KeyOutlined"
+            :label="t('system.user.resetPwd')"
             @click="openResetPwd(record)"
-          >
-            {{ t('system.user.resetPwd') }}
-          </a-button>
-          <a-button
+          />
+          <OpButton
             v-permission="PERMISSIONS.USER_REMOVE"
-            type="link"
-            size="small"
-            danger
+            action="delete"
+            :label="t('common.delete')"
             @click="handleDelete(record)"
-          >
-            {{ t('common.delete') }}
-          </a-button>
+          />
         </a-space>
       </template>
     </BasicTable>

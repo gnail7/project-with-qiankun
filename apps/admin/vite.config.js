@@ -1,12 +1,14 @@
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 import qiankun from 'vite-plugin-qiankun'
 
 export default defineConfig({
   plugins: [
     vue(),
+    vueJsx(),
     tailwindcss(),
     qiankun('gnail-admin', {
       useDevMode: true, // 开发环境必须开启

@@ -74,7 +74,7 @@ microActions.onGlobalStateChange(state => {
 </script>
 
 <template>
-  <div class="w-screen h-screen" style="height: 100vh">
+  <div class="h-full w-full flex flex-col">
     <a-config-provider :theme="antdTheme">
       <router-view />
     </a-config-provider>
