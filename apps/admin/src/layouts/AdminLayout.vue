@@ -15,7 +15,7 @@ import { useAppStore } from '@/stores/app'
 import { usePermissionStore } from '@/stores/permission'
 import { resetDynamicRoutes } from '@/router'
 import { useUserStore } from '@/stores/user'
-import { useTheme } from '@ziven/ui'
+import { useLocale, useTheme } from '@ziven/ui'
 import SideMenu from './components/SideMenu.vue'
 
 const { t } = useI18n()
@@ -28,6 +28,9 @@ const route = useRoute()
 // 主题来自组件库 useTheme（localStorage 持久化，默认 dark）
 const { isDark, toggleTheme } = useTheme()
 const antdSiderTheme = computed(() => (isDark.value ? 'dark' : 'light'))
+
+// 语言来自组件库 useLocale（localStorage 持久化）
+const { locale, setLocale } = useLocale()
 
 // 仪表盘固定在首位，其后为权限过滤后的动态菜单
 const menus = computed(() => [
@@ -63,7 +66,7 @@ function handleLogout() {
       v-model:collapsed="store.collapsed"
       :theme="antdSiderTheme"
       collapsible
-      class="!overflow-auto !h-screen !fixed !left-0 !top-0 !z-10"
+      class="!overflow-auto !h-screen !fixed !left-0 !top-0 !z-10 dark:!bg-[#0a0a0a]"
       breakpoint="lg"
     >
       <div
@@ -82,7 +85,7 @@ function handleLogout() {
     >
       <a-layout-header
         :theme="antdSiderTheme"
-        class="!px-4 flex items-center justify-between sticky top-0 z-10 !bg-white dark:!bg-gray-900 shadow-sm"
+        class="!px-4 flex items-center justify-between sticky top-0 z-10 !bg-white dark:!bg-[#0a0a0a] shadow-sm"
       >
         <component
           :is="store.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined"
@@ -93,11 +96,11 @@ function handleLogout() {
         <a-space>
           <a-dropdown>
             <a-button size="small">
-              {{ store.locale === 'zh-CN' ? t('language.zhCN') : t('language.enUS') }}
+              {{ locale === 'zh-CN' ? t('language.zhCN') : t('language.enUS') }}
               <DownOutlined />
             </a-button>
             <template #overlay>
-              <a-menu @click="({ key }) => store.setLocale(key)">
+              <a-menu @click="({ key }) => setLocale(key)">
                 <a-menu-item key="zh-CN">{{ t('language.zhCN') }}</a-menu-item>
                 <a-menu-item key="en-US">{{ t('language.enUS') }}</a-menu-item>
               </a-menu>
@@ -134,7 +137,7 @@ function handleLogout() {
       </a-layout-header>
 
       <a-layout-content
-        class="m-4 p-6 bg-white dark:bg-gray-800 rounded-lg min-h-[calc(100vh-112px)]"
+        class="m-4 p-6 bg-white dark:bg-[#0a0a0a] rounded-lg min-h-[calc(100vh-112px)]"
       >
         <router-view />
       </a-layout-content>

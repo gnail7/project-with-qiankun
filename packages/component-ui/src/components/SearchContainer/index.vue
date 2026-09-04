@@ -6,15 +6,25 @@
       class="search-container__form"
       @finish="handleSearch"
     >
-      <div class="search-container__fields" :class="{ 'is-collapsed': innerCollapsed }">
+      <!-- 搜索条件 -->
+      <div
+        class="search-container__fields"
+        :class="{
+          'is-collapsed': innerCollapsed,
+        }"
+      >
         <a-form-item
           v-for="schema in visibleSchemas"
           :key="schema.field"
           :label="schema.label"
           class="search-container__item"
-          :style="{ width: getItemWidth(schema) }"
+          :style="{
+            gridColumn: getItemGridColumn(schema),
+          }"
         >
+          <!-- 自定义字段插槽 -->
           <slot :name="schema.field" :schema="schema" :value="modelValue[schema.field]">
+            <!-- 默认组件 -->
             <component
               :is="schema.component"
               v-model:value="modelValue[schema.field]"
@@ -24,28 +34,38 @@
         </a-form-item>
       </div>
 
+      <!-- 操作区域 -->
       <div class="search-container__actions">
         <a-space>
+          <!-- 查询 -->
           <a-button v-if="showSearch" type="primary" html-type="submit" :loading="loading">
             <SearchOutlined />
             {{ searchText }}
           </a-button>
 
+          <!-- 重置 -->
           <a-button v-if="showReset" @click="handleReset">
             <ReloadOutlined />
             {{ resetText }}
           </a-button>
 
+          <!-- 自定义操作 -->
           <slot name="actions" />
 
+          <!-- 展开 / 收起 -->
           <a-button
-            v-if="showCollapse && schemas.length > 1"
+            v-if="showCollapse && schemas.length > 4"
             type="link"
             class="search-container__collapse"
-            @click="innerCollapsed = !innerCollapsed"
+            @click="toggleCollapse"
           >
             {{ innerCollapsed ? '展开' : '收起' }}
-            <DownOutlined :class="{ 'is-expanded': !innerCollapsed }" />
+
+            <DownOutlined
+              :class="{
+                'is-expanded': !innerCollapsed,
+              }"
+            />
           </a-button>
         </a-space>
       </div>
@@ -57,8 +77,12 @@
 import { theme } from 'ant-design-vue'
 import { computed, ref, watch } from 'vue'
 import { DownOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
+
 import type { SearchContainerProps, SearchSchema } from './types'
 
+/**
+ * Props
+ */
 const props = withDefaults(defineProps<SearchContainerProps>(), {
   schemas: () => [],
   loading: false,
@@ -70,17 +94,9 @@ const props = withDefaults(defineProps<SearchContainerProps>(), {
   resetText: '重置',
 })
 
-// 跟随 antd ConfigProvider 主题（亮/暗），以 CSS 变量注入 scoped 样式
-const { token } = theme.useToken()
-const cssVars = computed(() => {
-  const t = token?.value ?? token ?? {}
-  return {
-    '--sc-bg': t.colorBgContainer || '#ffffff',
-    '--sc-border': t.colorBorderSecondary || 'rgba(5, 5, 5, 0.06)',
-    '--sc-text': t.colorText || 'rgba(0, 0, 0, 0.88)',
-  }
-})
-
+/**
+ * Emits
+ */
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, any>]
   'update:collapsed': [value: boolean]
@@ -88,8 +104,35 @@ const emit = defineEmits<{
   reset: [value: Record<string, any>]
 }>()
 
+/**
+ * Ant Design Vue Theme Token
+ *
+ * 自动跟随 ConfigProvider 的亮色 / 暗色主题
+ */
+const { token } = theme.useToken()
+
+const cssVars = computed(() => {
+  const t = token?.value ?? token ?? {}
+
+  return {
+    '--sc-bg': t.colorBgContainer || '#ffffff',
+    '--sc-bg-secondary': t.colorBgElevated || '#ffffff',
+    '--sc-border': t.colorBorderSecondary || 'rgba(5, 5, 5, 0.06)',
+    '--sc-text': t.colorText || 'rgba(0, 0, 0, 0.88)',
+    '--sc-text-secondary': t.colorTextSecondary || 'rgba(0, 0, 0, 0.65)',
+    '--sc-hover': t.colorFillSecondary || 'rgba(0, 0, 0, 0.04)',
+    '--sc-primary': t.colorPrimary || '#1677ff',
+  }
+})
+
+/**
+ * 内部展开状态
+ */
 const innerCollapsed = ref(props.collapsed)
 
+/**
+ * 外部 collapsed 改变
+ */
 watch(
   () => props.collapsed,
   value => {
@@ -97,99 +140,103 @@ watch(
   },
 )
 
+/**
+ * 内部 collapsed 改变
+ */
 watch(innerCollapsed, value => {
   emit('update:collapsed', value)
 })
 
+/**
+ * 过滤隐藏字段
+ */
 const schemas = computed(() => {
   return props.schemas.filter(item => !item.hidden)
 })
 
+/**
+ * 当前显示的搜索条件
+ *
+ * 收起：
+ *   只显示前 4 个
+ *
+ * 展开：
+ *   显示全部
+ */
 const visibleSchemas = computed(() => {
-  if (!props.showCollapse || !innerCollapsed.value) {
+  // 不显示展开/收起
+  if (!props.showCollapse) {
     return schemas.value
   }
 
-  return schemas.value.slice(0, 3)
-})
-
-const getItemWidth = (schema: SearchSchema) => {
-  if (schema.colProps?.span) {
-    return `${(schema.colProps.span / 24) * 100}%`
+  // 当前是展开状态
+  if (!innerCollapsed.value) {
+    return schemas.value
   }
 
-  return '280px'
+  // 收起状态
+  return schemas.value.slice(0, 4)
+})
+
+/**
+ * 计算 Grid 占用列数
+ *
+ * 默认：
+ *   1 个条件 = 1 格
+ *
+ * 如果配置了 Ant Design 24 栅格：
+ *
+ *   span: 6  -> 1 格
+ *   span: 12 -> 2 格
+ *   span: 18 -> 3 格
+ *   span: 24 -> 4 格
+ */
+const getItemGridColumn = (schema: SearchSchema) => {
+  const span = schema.colProps?.span
+
+  if (!span) {
+    return 'span 1'
+  }
+
+  const gridSpan = Math.ceil(span / 6)
+
+  return `span ${Math.min(Math.max(gridSpan, 1), 4)}`
 }
 
+/**
+ * 切换展开 / 收起
+ */
+const toggleCollapse = () => {
+  innerCollapsed.value = !innerCollapsed.value
+}
+
+/**
+ * 查询
+ */
 const handleSearch = () => {
-  emit('search', props.modelValue)
+  emit('search', {
+    ...props.modelValue,
+  })
 }
 
+/**
+ * 重置
+ */
 const handleReset = () => {
-  const values = { ...props.modelValue }
+  const values = {
+    ...props.modelValue,
+  }
 
   schemas.value.forEach(schema => {
     values[schema.field] = schema.defaultValue ?? undefined
   })
 
   emit('update:modelValue', values)
+
   emit('reset', values)
 }
 </script>
 
 <style scoped>
-.search-container {
-  padding: 20px 24px 4px;
-  margin-bottom: 16px;
-  color: var(--sc-text);
-  background: var(--sc-bg);
-  border: 1px solid var(--sc-border);
-  border-radius: 6px;
-}
-
-.search-container__form {
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.search-container__fields {
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.search-container__item {
-  box-sizing: border-box;
-  padding-right: 16px;
-  margin-bottom: 16px;
-}
-
-.search-container__item :deep(.ant-form-item-control) {
-  min-width: 0;
-}
-
-.search-container__item :deep(.ant-input),
-.search-container__item :deep(.ant-select),
-.search-container__item :deep(.ant-picker) {
-  width: 100%;
-}
-
-.search-container__actions {
-  flex-shrink: 0;
-  margin-bottom: 16px;
-}
-
-.search-container__collapse {
-  padding: 0 4px;
-}
-
-.search-container__collapse .anticon {
-  transition: transform 0.2s;
-}
-
-.search-container__collapse .is-expanded {
-  transform: rotate(180deg);
-}
+@import url('./index.css');
 </style>

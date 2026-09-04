@@ -6,7 +6,7 @@ const t = key => i18n.global.t(key)
 
 const request = axios.create({
   // 后端地址，可用环境变量 VITE_API_BASE_URL 覆盖
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
 })
 

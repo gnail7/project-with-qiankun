@@ -1,13 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import i18n from '@/i18n'
-import { microActions } from '@/qiankun/actions'
 
 export const useAppStore = defineStore('app', () => {
   const collapsed = ref(false)
   // 布局模式：sidebar（侧边栏） | top（顶部）
   const layout = ref(localStorage.getItem('layout') || 'sidebar')
-  const locale = ref(localStorage.getItem('locale') || 'zh-CN')
 
   const toggleCollapsed = () => {
     collapsed.value = !collapsed.value
@@ -22,21 +19,11 @@ export const useAppStore = defineStore('app', () => {
     localStorage.setItem('layout', value)
   }
 
-  /** 切换语言：写入 localStorage + 切换 vue-i18n + 同步给主应用 */
-  const setLocale = lang => {
-    locale.value = lang
-    localStorage.setItem('locale', lang)
-    i18n.global.locale.value = lang
-    microActions.setGlobalState({ language: lang })
-  }
-
   return {
     collapsed,
     layout,
-    locale,
     toggleCollapsed,
     toggleLayout,
     setLayout,
-    setLocale,
   }
 })

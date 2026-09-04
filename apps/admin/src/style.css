@@ -12,3 +12,47 @@
 html {
   transition: background-color 0.3s ease;
 }
+
+/* vben 风格暗色：外层近黑背景 */
+html.dark body {
+  background: #0a0a0a;
+}
+
+/* 暗色下：侧边栏菜单统一近黑底 + indigo 选中 pill + hover 微亮 */
+html.dark .ant-layout-sider,
+html.dark .ant-layout-sider .ant-menu-dark,
+html.dark .ant-layout-sider .ant-menu-dark .ant-menu-sub {
+  background: #0a0a0a !important;
+}
+
+html.dark .ant-menu-dark .ant-menu-item,
+html.dark .ant-menu-dark .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+html.dark .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected):hover,
+html.dark .ant-menu-dark .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+html.dark .ant-menu-dark .ant-menu-item-selected {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #ffffff !important;
+}
+
+html.dark .ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon,
+html.dark .ant-menu-dark .ant-menu-item-selected .anticon {
+  color: #818cf8 !important;
+}
+
+/* antd 按钮：图标与文字垂直居中 */
+.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-btn > .ant-btn-icon {
+  margin-inline-end: 8px;
+}

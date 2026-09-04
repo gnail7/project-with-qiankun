@@ -2,7 +2,7 @@ import { createI18n } from 'vue-i18n'
 import enUS from '../locales/en-US'
 import zhCN from '../locales/zh-CN'
 
-const savedLocale = localStorage.getItem('locale') || 'zh-CN'
+const savedLocale = localStorage.getItem('ziven-locale') || 'zh-CN'
 
 const i18n = createI18n({
   legacy: false,

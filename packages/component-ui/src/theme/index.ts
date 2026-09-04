@@ -13,6 +13,9 @@ export interface UseThemeResult {
 const STORAGE_KEY = 'ziven-theme'
 const DEFAULT_THEME: ThemeMode = 'dark'
 
+/** 主题色（indigo），供消费方 ConfigProvider 使用 */
+export const PRIMARY_COLOR = '#6366f1'
+
 function loadTheme(): ThemeMode {
   const value = localStorage.getItem(STORAGE_KEY)
   return value === 'light' || value === 'dark' ? value : DEFAULT_THEME

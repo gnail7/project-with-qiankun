@@ -1,5 +1,7 @@
 export * from './components/BasicTable'
 export * from './components/SearchContainer'
+export * from './components/LocaleSwitch'
 export * from './components/ThemeToggle'
 export * from './components/VerificationCode'
+export * from './locale'
 export * from './theme'

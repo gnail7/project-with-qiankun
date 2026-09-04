@@ -6,6 +6,22 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./theme": {
+      "types": "./src/theme/index.ts",
+      "import": "./src/theme/index.ts"
+    },
+    "./locale": {
+      "types": "./src/locale/index.ts",
+      "import": "./src/locale/index.ts"
+    },
+    "./ThemeToggle": {
+      "types": "./src/components/ThemeToggle/index.ts",
+      "import": "./src/components/ThemeToggle/index.ts"
+    },
+    "./LocaleSwitch": {
+      "types": "./src/components/LocaleSwitch/index.ts",
+      "import": "./src/components/LocaleSwitch/index.ts"
     }
   },
   "scripts": {
