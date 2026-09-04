@@ -18,6 +18,19 @@ html.dark body {
   background: #0a0a0a;
 }
 
+/* 高度链：让子应用内容能撑满容器（单独运行=视口，嵌入主应用=容器剩余高度） */
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* 禁止页面整体横向滚动（表格用 scroll.x 在内部横向滚动） */
+html,
+body {
+  overflow-x: hidden;
+}
+
 /* 暗色下：侧边栏菜单统一近黑底 + indigo 选中 pill + hover 微亮 */
 html.dark .ant-layout-sider,
 html.dark .ant-layout-sider .ant-menu-dark,

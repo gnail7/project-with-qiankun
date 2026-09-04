@@ -1,0 +1,30 @@
+{
+  "name": "monitoring",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sentry",
+    "monitoring",
+    "vue3",
+    "qiankun",
+    "micro-frontend"
+  ],
+  "author": "Ziven",
+  "license": "ISC",
+  "packageManager": "pnpm@10.32.1",
+  "dependencies": {
+    "@sentry/vue": "^10.73.0"
+  }
+}

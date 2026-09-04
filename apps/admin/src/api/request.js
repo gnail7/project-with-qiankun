@@ -25,11 +25,14 @@ request.interceptors.response.use(
     const res = response.data
     if (res && res.code === 200) {
       return res
+    } else if (res.code && res.code !== 200) {
+      // 业务错误（HTTP 200，但 code !== 200）：交给调用方处理，不自动弹提示
+      const err = new Error(res?.message || t('error.requestFailed'))
+      err.biz = res
+      return Promise.reject(err)
     }
-    // 业务错误（HTTP 200，但 code !== 200）：交给调用方处理，不自动弹提示
-    const err = new Error(res?.message || t('error.requestFailed'))
-    err.biz = res
-    return Promise.reject(err)
+
+    return Promise.resolve(res)
   },
   error => {
     // HTTP 层错误

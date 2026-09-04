@@ -1,4 +1,5 @@
 export * from './components/BasicTable'
+export * from './components/OpButton'
 export * from './components/SearchContainer'
 export * from './components/LocaleSwitch'
 export * from './components/ThemeToggle'

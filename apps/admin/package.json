@@ -10,17 +10,21 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@sentry/vue": "^10.73.0",
     "@ziven/ui": "workspace:*",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.7.9",
+    "monitoring": "workspace:*",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",
     "vue-i18n": "^11.1.2",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@sentry/vite-plugin": "^5.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
     "tailwindcss": "^4.3.3",
     "vite": "^5.4.14",
     "vite-plugin-qiankun": "^1.0.15"
