@@ -35,4 +35,8 @@ export const PERMISSIONS = {
   ROLE_EDIT: 'system:role:edit',
   ROLE_REMOVE: 'system:role:remove',
   ROLE_ASSIGN_MENU: 'system:role:assign',
+  MENU_LIST: 'system:menu:list',
+  MENU_ADD: 'system:menu:add',
+  MENU_EDIT: 'system:menu:edit',
+  MENU_REMOVE: 'system:menu:remove',
 }

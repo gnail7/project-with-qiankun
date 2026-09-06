@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { updateDocumentTitle } from '@/i18n'
 import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
+import { joinMenuPath, resolveComponent } from '@/utils/menu'
 
 export const LAYOUT_NAME = 'AdminLayout'
 
@@ -41,27 +42,37 @@ const router = createRouter({
 })
 
 /**
- * 把权限过滤后的叶子菜单注册为 AdminLayout 的子路由
+ * 把后端返回的可见菜单树注册为 AdminLayout 的子路由。
+ * - M(目录)：递归拼接路径，不注册路由
+ * - C(菜单)：需要能解析到页面组件才注册；name 从 menuId 派生，便于退出时移除
  */
 let dynamicNames = []
 
-function addDynamicRoutes(menus) {
+function addDynamicRoutes(menus, parentPath = '') {
   const names = []
   menus.forEach(item => {
-    if (item.children?.length) {
-      names.push(...addDynamicRoutes(item.children))
+    const fullPath = joinMenuPath(parentPath, item.path)
+    if (item.menuType === 'M') {
+      if (item.children?.length) {
+        names.push(...addDynamicRoutes(item.children, fullPath))
+      }
       return
     }
-    if (!item.component) {
+    if (item.menuType !== 'C') {
       return
     }
+    const loader = resolveComponent(item.component)
+    if (!loader) {
+      return
+    }
+    const routeName = `menu_${item.menuId}`
     router.addRoute(LAYOUT_NAME, {
-      path: item.path,
-      name: item.name,
-      component: item.component,
-      meta: { titleKey: item.titleKey, permission: item.permission },
+      path: fullPath,
+      name: routeName,
+      component: loader,
+      meta: { title: item.menuName, permission: item.perms, menuId: item.menuId },
     })
-    names.push(item.name)
+    names.push(routeName)
   })
   return names
 }

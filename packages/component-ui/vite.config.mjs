@@ -20,8 +20,8 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      // vue / ant-design-vue 由使用方提供，不打进包
-      external: ['vue', 'ant-design-vue'],
+      // vue / ant-design-vue / vue-router 由使用方提供，不打进包
+      external: ['vue', 'ant-design-vue', 'vue-router'],
     },
   },
 })

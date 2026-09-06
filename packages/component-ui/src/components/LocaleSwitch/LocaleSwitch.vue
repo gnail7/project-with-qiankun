@@ -53,11 +53,11 @@ const options: { value: string; label: string }[] = [
 }
 
 .z-locale-switch__item:hover {
-  background-color: rgba(127, 127, 127, 0.14);
+  background-color: var(--z-hover, rgba(127, 127, 127, 0.14));
 }
 
 .z-locale-switch__item.is-active {
-  background-color: rgba(99, 102, 241, 0.2);
-  color: #6366f1;
+  background-color: var(--z-primary-soft, rgba(99, 102, 241, 0.2));
+  color: var(--z-primary, #6366f1);
 }
 </style>

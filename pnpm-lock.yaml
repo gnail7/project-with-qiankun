@@ -173,6 +173,9 @@ importers:
       vue:
         specifier: ^3.5.0
         version: 3.5.41(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.4.0
+        version: 4.6.4(vue@3.5.41(typescript@5.9.3))
 
   packages/monitoring:
     dependencies:
@@ -6481,6 +6484,11 @@ snapshots:
       '@intlify/shared': 11.4.8
       '@vue/devtools-api': 6.6.4
       vue: 3.5.41(typescript@6.0.3)
+
+  vue-router@4.6.4(vue@3.5.41(typescript@5.9.3)):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.41(typescript@5.9.3)
 
   vue-router@4.6.4(vue@3.5.41(typescript@6.0.3)):
     dependencies:

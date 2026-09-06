@@ -10,6 +10,13 @@ const components = fs
   .map(item => item.name)
   .sort()
 
-const content = components.map(name => `export * from './components/${name}'`).join('\n')
+const modules = ['theme', 'locale', 'preferences']
+  .map(name => `export * from './${name}'`)
+  .join('\n')
+
+const content = [
+  ...components.map(name => `export * from './components/${name}'`),
+  modules,
+].filter(Boolean).join('\n')
 
 fs.writeFileSync(entryFile, `${content}\n`)

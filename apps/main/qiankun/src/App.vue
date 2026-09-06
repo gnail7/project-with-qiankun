@@ -44,7 +44,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-950 transition-colors">
+  <div class="h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-zinc-950 transition-colors">
     <!-- 导航栏 -->
     <header
       class="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors"
@@ -120,7 +120,11 @@ onMounted(() => {
       </div>
     </main>
 
-    <!-- 子应用容器 -->
-    <main v-show="currentPath.startsWith('/gnail-admin')" id="subapp-container" class="flex-1" />
+    <!-- 子应用容器：定高（flex-1 + min-h-0），子应用以 100% 撑满并在内部滚动 -->
+    <main
+      v-show="currentPath.startsWith('/gnail-admin')"
+      id="subapp-container"
+      class="flex-1 min-h-0 overflow-hidden"
+    />
   </div>
 </template>

@@ -2,14 +2,14 @@
 import { theme } from 'ant-design-vue'
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useLocale, useTheme, PRIMARY_COLOR } from '@ziven/ui'
+import { useLocale, useTheme } from '@ziven/ui'
 import i18n, { updateDocumentTitle } from '@/i18n'
 import { microActions } from '@/qiankun/actions'
 
 const route = useRoute()
 
-// 主题统一由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换即刷新）
-const { isDark, initTheme } = useTheme()
+// 主题统一由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换走平滑动画）
+const { isDark, primaryColor, initTheme } = useTheme()
 initTheme()
 
 // 语言统一由组件库 useLocale 管理（localStorage 持久化，默认 zh-CN）
@@ -22,7 +22,7 @@ const antdTheme = computed(() => {
     return {
       algorithm: theme.darkAlgorithm,
       token: {
-        colorPrimary: PRIMARY_COLOR,
+        colorPrimary: primaryColor.value,
         colorBgContainer: '#18181b',
         colorBgElevated: '#18181b',
         colorBgLayout: '#0a0a0a',
@@ -42,8 +42,8 @@ const antdTheme = computed(() => {
           darkPopupBg: '#18181b',
           darkItemColor: 'rgba(255, 255, 255, 0.65)',
           darkItemHoverBg: 'rgba(255, 255, 255, 0.06)',
-          darkItemSelectedBg: 'rgba(99, 102, 241, 0.16)',
-          darkItemSelectedColor: PRIMARY_COLOR,
+          darkItemSelectedBg: `${primaryColor.value}2b`,
+          darkItemSelectedColor: primaryColor.value,
         },
       },
     }
@@ -51,7 +51,7 @@ const antdTheme = computed(() => {
   return {
     algorithm: theme.defaultAlgorithm,
     token: {
-      colorPrimary: PRIMARY_COLOR,
+      colorPrimary: primaryColor.value,
       borderRadius: 6,
     },
   }
@@ -74,7 +74,7 @@ microActions.onGlobalStateChange(state => {
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col">
+  <div class="h-full w-full overflow-hidden">
     <a-config-provider :theme="antdTheme">
       <router-view />
     </a-config-provider>

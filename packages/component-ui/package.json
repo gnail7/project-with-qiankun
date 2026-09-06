@@ -15,6 +15,10 @@
       "types": "./src/locale/index.ts",
       "import": "./src/locale/index.ts"
     },
+    "./preferences": {
+      "types": "./src/preferences/index.ts",
+      "import": "./src/preferences/index.ts"
+    },
     "./ThemeToggle": {
       "types": "./src/components/ThemeToggle/index.ts",
       "import": "./src/components/ThemeToggle/index.ts"
@@ -22,6 +26,18 @@
     "./LocaleSwitch": {
       "types": "./src/components/LocaleSwitch/index.ts",
       "import": "./src/components/LocaleSwitch/index.ts"
+    },
+    "./BasicLayout": {
+      "types": "./src/components/BasicLayout/index.ts",
+      "import": "./src/components/BasicLayout/index.ts"
+    },
+    "./AppSearch": {
+      "types": "./src/components/AppSearch/index.ts",
+      "import": "./src/components/AppSearch/index.ts"
+    },
+    "./PreferencesDrawer": {
+      "types": "./src/components/PreferencesDrawer/index.ts",
+      "import": "./src/components/PreferencesDrawer/index.ts"
     }
   },
   "scripts": {
@@ -30,7 +46,8 @@
   },
   "peerDependencies": {
     "ant-design-vue": "^4.0.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
@@ -39,7 +56,8 @@
     "typescript": "^5.0.0",
     "vite": "^7.0.0",
     "vite-plugin-dts": "^4.0.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1"

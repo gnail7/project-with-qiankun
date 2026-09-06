@@ -1,56 +1,77 @@
-<script setup>
-import {
-  BulbOutlined,
-  DashboardOutlined,
-  DownOutlined,
-  LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UserOutlined,
-} from '@ant-design/icons-vue'
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
-import { useAppStore } from '@/stores/app'
+import { useRouter } from 'vue-router'
+import { DashboardOutlined } from '@ant-design/icons-vue'
+import { BasicLayout } from '@ziven/ui/BasicLayout'
+import type { BasicMenuItem } from '@ziven/ui/BasicLayout'
 import { usePermissionStore } from '@/stores/permission'
 import { resetDynamicRoutes } from '@/router'
 import { useUserStore } from '@/stores/user'
-import { useLocale, useTheme } from '@ziven/ui'
-import SideMenu from './components/SideMenu.vue'
+import { joinMenuPath, resolveComponent, resolveIcon } from '@/utils/menu'
+
+interface BackendMenuNode {
+  menuId: number
+  menuName: string
+  parentId?: number
+  path?: string
+  component?: string
+  menuType?: 'M' | 'C' | 'F'
+  visible?: string
+  status?: string
+  perms?: string
+  icon?: string
+  children?: BackendMenuNode[]
+}
 
 const { t } = useI18n()
-const store = useAppStore()
 const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 const router = useRouter()
-const route = useRoute()
 
-// 主题来自组件库 useTheme（localStorage 持久化，默认 dark）
-const { isDark, toggleTheme } = useTheme()
-const antdSiderTheme = computed(() => (isDark.value ? 'dark' : 'light'))
+/** 后端菜单树 → BasicLayout 菜单节点（跳过按钮/隐藏/无页面项，title 用 menu_name） */
+function mapMenus(list: BackendMenuNode[] = [], parentPath = ''): BasicMenuItem[] {
+  const result: BasicMenuItem[] = []
+  list.forEach(item => {
+    if (item.menuType === 'F') {
+      return
+    }
+    const fullPath = joinMenuPath(parentPath, item.path)
+    if (item.menuType === 'M') {
+      const children = mapMenus(item.children || [], fullPath)
+      if (children.length) {
+        result.push({
+          path: fullPath,
+          title: item.menuName,
+          icon: resolveIcon(item.icon),
+          children,
+        })
+      }
+      return
+    }
+    // C 菜单：隐藏项不进侧边栏；找不到页面组件也不展示
+    if (item.visible === '1') {
+      return
+    }
+    if (!resolveComponent(item.component)) {
+      return
+    }
+    result.push({ path: fullPath, title: item.menuName, icon: resolveIcon(item.icon) })
+  })
+  return result
+}
 
-// 语言来自组件库 useLocale（localStorage 持久化）
-const { locale, setLocale } = useLocale()
-
-// 仪表盘固定在首位，其后为权限过滤后的动态菜单
-const menus = computed(() => [
-  {
-    path: '/dashboard',
-    titleKey: 'menu.dashboard',
-    icon: DashboardOutlined,
-  },
-  ...permissionStore.menus,
+/** 仪表盘为固定落地页，始终置顶；其余菜单完全由后端菜单树驱动 */
+const menus = computed<BasicMenuItem[]>(() => [
+  { path: '/dashboard', title: t('menu.dashboard'), icon: DashboardOutlined },
+  ...mapMenus(permissionStore.menus as BackendMenuNode[]),
 ])
 
-const displayName = computed(
-  () => userStore.userInfo?.nickName || userStore.userInfo?.userName || t('header.admin'),
-)
-
-const openKeys = computed(() => {
-  return permissionStore.menus
-    .filter(item => item.children?.length && route.path.startsWith(item.path))
-    .map(item => item.path)
-})
+const user = computed(() => ({
+  name: userStore.userInfo?.userName,
+  nickname: userStore.userInfo?.nickName,
+  avatar: userStore.userInfo?.avatar,
+}))
 
 function handleLogout() {
   userStore.logout()
@@ -61,90 +82,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <a-layout class="h-full">
-    <a-layout-sider
-      v-model:collapsed="store.collapsed"
-      :theme="antdSiderTheme"
-      collapsible
-      class="!overflow-auto !h-screen !fixed !left-0 !top-0 !z-10 dark:!bg-[#0a0a0a]"
-      breakpoint="lg"
-    >
-      <div
-        class="flex items-center justify-center h-16 text-white font-bold text-lg whitespace-nowrap"
-      >
-        <span class="text-blue-500">🐌</span>
-        <span v-show="!store.collapsed" class="ml-2">Gnail Admin</span>
-      </div>
-
-      <SideMenu :menus="menus" :theme="antdSiderTheme" :default-open-keys="openKeys" />
-    </a-layout-sider>
-
-    <a-layout
-      :style="{ marginLeft: store.collapsed ? '80px' : '200px' }"
-      class="transition-all duration-200"
-    >
-      <a-layout-header
-        :theme="antdSiderTheme"
-        class="!px-4 flex items-center justify-between sticky top-0 z-10 !bg-white dark:!bg-[#0a0a0a] shadow-sm"
-      >
-        <component
-          :is="store.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined"
-          class="text-lg cursor-pointer hover:text-blue-500 transition-colors"
-          @click="store.toggleCollapsed()"
-        />
-
-        <a-space>
-          <a-dropdown>
-            <a-button size="small">
-              {{ locale === 'zh-CN' ? t('language.zhCN') : t('language.enUS') }}
-              <DownOutlined />
-            </a-button>
-            <template #overlay>
-              <a-menu @click="({ key }) => setLocale(key)">
-                <a-menu-item key="zh-CN">{{ t('language.zhCN') }}</a-menu-item>
-                <a-menu-item key="en-US">{{ t('language.enUS') }}</a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
-
-          <a-tooltip :title="t('header.toggleTheme')">
-            <a-button shape="circle" @click="toggleTheme">
-              <template #icon>
-                <BulbOutlined />
-              </template>
-            </a-button>
-          </a-tooltip>
-
-          <a-dropdown>
-            <a-space class="cursor-pointer">
-              <a-avatar size="small">
-                <template #icon>
-                  <UserOutlined />
-                </template>
-              </a-avatar>
-              <span class="text-sm hidden sm:inline">{{ displayName }}</span>
-            </a-space>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item key="logout" @click="handleLogout">
-                  <LogoutOutlined />
-                  <span class="ml-2">{{ t('header.logout') }}</span>
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
-        </a-space>
-      </a-layout-header>
-
-      <a-layout-content
-        class="m-4 p-6 bg-white dark:bg-[#0a0a0a] rounded-lg flex-1 min-h-0 overflow-auto"
-      >
-        <router-view />
-      </a-layout-content>
-
-      <a-layout-footer class="text-center text-gray-400 !bg-transparent">
-        Gnail Admin ©{{ new Date().getFullYear() }}
-      </a-layout-footer>
-    </a-layout>
-  </a-layout>
+  <BasicLayout :menus="menus" app-name="Gnail Admin" :user="user" @logout="handleLogout">
+    <router-view />
+  </BasicLayout>
 </template>

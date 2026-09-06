@@ -1,9 +1,9 @@
 <script setup>
 import { message } from 'ant-design-vue'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { assignRoleMenus, getRoleMenuIds } from '@/api/role'
-import { asyncMenus } from '@/router/menu-config'
+import { getMenuTree } from '@/api/menu'
 
 const { t } = useI18n()
 const emit = defineEmits(['saved'])
@@ -13,25 +13,38 @@ const submitting = ref(false)
 const targetRoleId = ref(null)
 const checkedKeys = ref([])
 const expandedKeys = ref([])
+const treeData = ref([])
 
-// 菜单配置 → antd treeData（key 统一转字符串）
-const treeData = computed(() => buildTree(asyncMenus))
-
-function buildTree(menus) {
-  return menus.map(item => ({
-    title: t(item.titleKey),
-    key: String(item.id),
-    children: item.children?.length ? buildTree(item.children) : undefined,
+// 后端菜单树 → antd treeData（title/key 都要是 a-tree 认识的字段）
+function toTree(nodes) {
+  return (nodes || []).map(node => ({
+    title: node.menuName,
+    key: String(node.menuId),
+    children: node.children?.length ? toTree(node.children) : undefined,
   }))
+}
+
+// 收集所有“有子级”的节点 id，用于默认展开整棵树
+function collectExpandIds(nodes, acc = []) {
+  ;(nodes || []).forEach(node => {
+    if (node.children?.length) {
+      acc.push(String(node.menuId))
+      collectExpandIds(node.children, acc)
+    }
+  })
+  return acc
 }
 
 async function open(record) {
   targetRoleId.value = record.roleId
   visible.value = true
-  // 默认展开第一层
-  expandedKeys.value = asyncMenus.map(item => String(item.id))
-  const res = await getRoleMenuIds(record.roleId)
-  checkedKeys.value = (res.data || []).map(id => String(id))
+  // 全量菜单树来自后端（含 M/C/F，便于给角色分配按钮权限）
+  const res = await getMenuTree()
+  const menus = res.data || []
+  treeData.value = toTree(menus)
+  expandedKeys.value = collectExpandIds(menus)
+  const menuRes = await getRoleMenuIds(record.roleId)
+  checkedKeys.value = (menuRes.data || []).map(id => String(id))
 }
 
 async function handleSubmit() {
