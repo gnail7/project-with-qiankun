@@ -13,7 +13,7 @@ export const USER_SEX = [
   { value: '2', label: 'common.sexUnknown' },
 ]
 
-/** 数据权限范围（RuoYi 风格，与后端种子数据对应） */
+/** 数据权限范围（与后端种子数据对应） */
 export const DATA_SCOPE = [
   { value: '1', label: 'common.dataScopeAll' },
   { value: '2', label: 'common.dataScopeCustom' },

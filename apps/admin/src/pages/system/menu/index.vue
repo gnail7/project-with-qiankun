@@ -98,7 +98,6 @@ onMounted(load)
         @click="openCreate"
       />
     </div>
-
     <a-table
       v-model:expanded-row-keys="expandedKeys"
       :columns="columns"
@@ -109,49 +108,63 @@ onMounted(load)
       expand-row-by-click
       :scroll="{ x: 'max-content' }"
     >
-      <template #icon="{ record }">
-        <component :is="resolveIcon(record.icon)" v-if="resolveIcon(record.icon)" />
-      </template>
+      <template #bodyCell="{ column, record }">
+        <!-- 图标 -->
+        <template v-if="column.key === 'icon'">
+          <component :is="resolveIcon(record.icon)" v-if="resolveIcon(record.icon)" />
+        </template>
 
-      <template #type="{ record }">
-        <a-tag :color="typeMap[record.menuType]?.color">
-          {{ typeMap[record.menuType]?.label ?? record.menuType }}
-        </a-tag>
-      </template>
+        <!-- 类型 -->
+        <template v-else-if="column.key === 'type'">
+          <a-tag :color="typeMap[record.menuType]?.color">
+            {{ typeMap[record.menuType]?.label ?? record.menuType }}
+          </a-tag>
+        </template>
 
-      <template #visible="{ record }">
-        <a-tag :color="record.visible === '0' ? 'success' : 'default'">
-          {{ record.visible === '0' ? t('system.menu.visibleShow') : t('system.menu.visibleHide') }}
-        </a-tag>
-      </template>
+        <!-- 显示状态 -->
+        <template v-else-if="column.key === 'visible'">
+          <a-tag :color="record.visible === '0' ? 'success' : 'default'">
+            {{
+              record.visible === '0' ? t('system.menu.visibleShow') : t('system.menu.visibleHide')
+            }}
+          </a-tag>
+        </template>
 
-      <template #status="{ record }">
-        <a-tag :color="record.status === '0' ? 'success' : 'error'">
-          {{ record.status === '0' ? t('common.statusNormal') : t('common.statusDisabled') }}
-        </a-tag>
-      </template>
+        <!-- 状态 -->
+        <template v-else-if="column.key === 'status'">
+          <a-tag :color="record.status === '0' ? 'success' : 'error'">
+            {{ record.status === '0' ? t('common.statusNormal') : t('common.statusDisabled') }}
+          </a-tag>
+        </template>
 
-      <template #action="{ record }">
-        <a-space :size="0">
-          <OpButton
-            v-permission="PERMISSIONS.MENU_ADD"
-            action="add"
-            :label="t('system.menu.addChild')"
-            @click="openAddChild(record)"
-          />
-          <OpButton
-            v-permission="PERMISSIONS.MENU_EDIT"
-            action="edit"
-            :label="t('common.edit')"
-            @click="openEdit(record)"
-          />
-          <OpButton
-            v-permission="PERMISSIONS.MENU_REMOVE"
-            action="delete"
-            :label="t('common.delete')"
-            @click="handleDelete(record)"
-          />
-        </a-space>
+        <!-- 操作列 -->
+        <template v-else-if="column.key === 'action'">
+          <a-space :size="0">
+            <OpButton
+              v-permission="PERMISSIONS.MENU_ADD"
+              action="add"
+              :label="t('system.menu.addChild')"
+              @click="openAddChild(record)"
+            />
+            <OpButton
+              v-permission="PERMISSIONS.MENU_EDIT"
+              action="edit"
+              :label="t('common.edit')"
+              @click="openEdit(record)"
+            />
+            <OpButton
+              v-permission="PERMISSIONS.MENU_REMOVE"
+              action="delete"
+              :label="t('common.delete')"
+              @click="handleDelete(record)"
+            />
+          </a-space>
+        </template>
+
+        <!-- 其余普通列：menuName / orderNum / perms / component -->
+        <template v-else>
+          {{ record[column.dataIndex] }}
+        </template>
       </template>
     </a-table>
 
