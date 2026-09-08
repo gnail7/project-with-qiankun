@@ -14,6 +14,8 @@
     "@ziven/ui": "workspace:*",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.7.9",
+    "marked": "^18.0.12",
+    "md-editor-v3": "^6.5.6",
     "monitoring": "workspace:*",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",

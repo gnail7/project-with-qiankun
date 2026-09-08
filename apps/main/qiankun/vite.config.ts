@@ -1,4 +1,4 @@
-import path from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
@@ -26,8 +26,14 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  server: {
+    // 避开 admin(8081)/backend(8080)/Nuxt blog(3000)，宿主用 8082
+    port: 8082,
+    host: '0.0.0.0',
+    cors: true,
   },
   build: {
     sourcemap: 'hidden',

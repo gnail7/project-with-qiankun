@@ -10,6 +10,9 @@ import { globalActions } from './qiankun/actions'
 const { t, locale: i18nLocale } = useI18n()
 
 const currentPath = ref(window.location.pathname)
+// 独立 Nuxt 博客站地址（可用 VITE_BLOG_URL 覆盖）
+const blogUrl = import.meta.env.VITE_BLOG_URL || 'http://localhost:3000'
+
 function navigate(path: string) {
   window.history.pushState({}, '', path)
   currentPath.value = path
@@ -85,6 +88,14 @@ onMounted(() => {
             >
               {{ t('app.adminApp') }}
             </button>
+            <a
+              :href="blogUrl"
+              target="_blank"
+              rel="noopener"
+              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+            >
+              Blog ↗
+            </a>
           </nav>
 
           <!-- 语言切换（组件库 LocaleSwitch） -->
