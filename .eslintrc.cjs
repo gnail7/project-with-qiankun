@@ -34,5 +34,16 @@ module.exports = {
     ],
     'no-debugger': 'error', // 不允许出现 debugger
   },
+  overrides: [
+    {
+      // Nuxt 的 auto-import（ref/computed/useAsyncData/useRoute/useHead 等）由 Volar/TS 负责，
+      // ESLint core 的 no-undef 感知不到这些全局，会在 .vue 里误报。
+      // @typescript-eslint 只用 *.ts 的 glob 关了 no-undef，不覆盖 .vue，这里单独关掉。
+      files: ['*.vue'],
+      rules: {
+        'no-undef': 'off',
+      },
+    },
+  ],
   ignorePatterns: ['node_modules/', 'dist/', '.pnpm-store/', '.vite/', 'public/', 'coverage/'],
 }

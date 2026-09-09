@@ -31,7 +31,7 @@ const { isDark, toggle } = useBlogTheme()
     </main>
 
     <footer class="site-footer">
-      <div class="container">© {{ new Date().getFullYear() }} Ziven Blog · 用 Nuxt 驱动</div>
+      <div class="container">© {{ new Date().getFullYear() }} Ziven Blog</div>
     </footer>
   </div>
 </template>
