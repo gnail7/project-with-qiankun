@@ -74,6 +74,23 @@ function applyPrimaryColor(color: string) {
   document.documentElement.style.setProperty('--z-primary-soft', `${parseHexRgb(color)} / 0.16`)
 }
 
+/**
+ * 以 <html> 上的 `.dark` class 作为跨微前端（qiankun 主/子应用各自打包、各自持有一份
+ * 本模块单例）共享的唯一事实来源，把本地 `theme` ref 与实际 DOM 保持同步。
+ * 任一应用切换主题，其它应用持有的 isDark/theme 都会随之响应式更新，从而带动
+ * antd（ConfigProvider algorithm）、Tailwind dark: 等一并切换，避免「深色外壳 + 白色内容」。
+ */
+function syncThemeFromDom() {
+  const isDarkNow = document.documentElement.classList.contains('dark')
+  const next: ThemeMode = isDarkNow ? 'dark' : 'light'
+  if (theme.value !== next) {
+    theme.value = next
+    // 把其它端已应用的切换持久化，避免刷新后主题回跳
+    localStorage.setItem(THEME_STORAGE_KEY, next)
+  }
+  document.documentElement.style.colorScheme = next
+}
+
 /** 支持 View Transition 的 Document（用于主题切换的平滑动效） */
 type StartViewTransition = (cb: () => void | Promise<void>) => void
 
@@ -146,4 +163,12 @@ export function useTheme(): UseThemeResult {
 if (typeof document !== 'undefined') {
   applyTheme(theme.value)
   applyPrimaryColor(primaryColor.value)
+
+  // 监听 <html> class 变化，让主/子应用（qiankun 各自 bundle）的主题状态实时一致。
+  // 任一端切换，其它端的 isDark/theme 都会跟随并作用于 antd 等组件库。
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(syncThemeFromDom)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    syncThemeFromDom()
+  }
 }

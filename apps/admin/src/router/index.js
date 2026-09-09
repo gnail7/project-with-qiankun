@@ -48,6 +48,13 @@ const router = createRouter({
  */
 let dynamicNames = []
 
+/** 去掉首斜杠与 .vue 后缀得到组件 key，与 resolveComponent 保持一致的匹配规则 */
+function normalizeComponentKey(component) {
+  return String(component)
+    .replace(/^\/+/, '')
+    .replace(/\.vue$/, '')
+}
+
 function addDynamicRoutes(menus, parentPath = '') {
   const names = []
   menus.forEach(item => {
@@ -73,6 +80,24 @@ function addDynamicRoutes(menus, parentPath = '') {
       meta: { title: item.menuName, permission: item.perms, menuId: item.menuId },
     })
     names.push(routeName)
+
+    // 文章管理列表：额外注册一个“全屏编辑页”路由（新增/编辑共用，非菜单项），
+    // 路径挂在列表路径下（/blog/post/edit/:id?），保证无论列表实际路径如何都能正确跳转与返回。
+    if (normalizeComponentKey(item.component) === 'blog/post/index') {
+      const editorRouteName = `${routeName}_edit`
+      router.addRoute(LAYOUT_NAME, {
+        path: `${fullPath}/edit/:id?`,
+        name: editorRouteName,
+        component: () => import('@/pages/blog/post/edit.vue'),
+        meta: {
+          titleKey: 'blog.post.editorTitle',
+          permission: item.perms,
+          menuId: item.menuId,
+          listPath: fullPath,
+        },
+      })
+      names.push(editorRouteName)
+    }
   })
   return names
 }

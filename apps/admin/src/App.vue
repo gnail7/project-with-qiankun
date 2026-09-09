@@ -1,61 +1,27 @@
 <script setup>
-import { theme } from 'ant-design-vue'
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { theme as antdTheme } from 'ant-design-vue'
 import { useLocale, useTheme } from '@ziven/ui'
 import i18n, { updateDocumentTitle } from '@/i18n'
 import { microActions } from '@/qiankun/actions'
 
 const route = useRoute()
 
-// 主题统一由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换走平滑动画）
-const { isDark, primaryColor, initTheme } = useTheme()
+// 主题统一由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换走平滑动画；
+// 组件库内部监听 <html>.dark，主应用切换主题时子应用会实时跟随）
+const { isDark, initTheme } = useTheme()
 initTheme()
+
+// antd 跟随组件库主题：通过 ConfigProvider 的 algorithm 全局切换亮/暗，
+// 让 a-table / a-modal 等 antd 组件与组件库 chrome 保持一致，避免「深色外壳 + 白色内容」。
+const antdThemeConfig = computed(() => ({
+  algorithm: isDark.value ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+}))
 
 // 语言统一由组件库 useLocale 管理（localStorage 持久化，默认 zh-CN）
 const { locale, setLocale, initLocale } = useLocale()
 initLocale()
-
-// antd 主题：主色 + vben 风格暗色背景（近黑布局 + 深灰卡片）
-const antdTheme = computed(() => {
-  if (isDark.value) {
-    return {
-      algorithm: theme.darkAlgorithm,
-      token: {
-        colorPrimary: primaryColor.value,
-        colorBgContainer: '#18181b',
-        colorBgElevated: '#18181b',
-        colorBgLayout: '#0a0a0a',
-        colorBorder: 'rgba(255, 255, 255, 0.14)',
-        colorBorderSecondary: 'rgba(255, 255, 255, 0.08)',
-        borderRadius: 6,
-      },
-      components: {
-        Layout: {
-          siderBg: '#0a0a0a',
-          headerBg: '#0a0a0a',
-          bodyBg: '#0a0a0a',
-        },
-        Menu: {
-          darkItemBg: '#0a0a0a',
-          darkSubMenuItemBg: '#0a0a0a',
-          darkPopupBg: '#18181b',
-          darkItemColor: 'rgba(255, 255, 255, 0.65)',
-          darkItemHoverBg: 'rgba(255, 255, 255, 0.06)',
-          darkItemSelectedBg: `${primaryColor.value}2b`,
-          darkItemSelectedColor: primaryColor.value,
-        },
-      },
-    }
-  }
-  return {
-    algorithm: theme.defaultAlgorithm,
-    token: {
-      colorPrimary: primaryColor.value,
-      borderRadius: 6,
-    },
-  }
-})
 
 // 语言变化：同步 vue-i18n、document.lang、页面标题，并回传主应用（qiankun）
 watch(locale, value => {
@@ -75,7 +41,7 @@ microActions.onGlobalStateChange(state => {
 
 <template>
   <div class="h-full w-full overflow-hidden">
-    <a-config-provider :theme="antdTheme">
+    <a-config-provider :theme="antdThemeConfig">
       <router-view />
     </a-config-provider>
   </div>

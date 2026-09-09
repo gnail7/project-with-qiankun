@@ -2,12 +2,14 @@
 import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { BasicTable, OpButton, SearchContainer } from '@ziven/ui'
 import { deleteBlogPost, getBlogCategoryList, getBlogPostPage } from '@/api/blog'
 import { PERMISSIONS } from '@/constants'
-import PostFormModal from './components/PostFormModal.vue'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 
 const list = ref([])
 const total = ref(0)
@@ -15,7 +17,6 @@ const page = ref(1)
 const pageSize = ref(10)
 const loading = ref(false)
 const query = ref({})
-const postFormRef = ref()
 const categoryOptions = ref([])
 
 const statusOptions = computed(() => [
@@ -99,11 +100,11 @@ watch(pageSize, () => {
 watch([page, pageSize], load)
 
 function openCreate() {
-  postFormRef.value?.open()
+  router.push(`${route.path}/edit`)
 }
 
 function openEdit(record) {
-  postFormRef.value?.open(record)
+  router.push(`${route.path}/edit/${record.postId}`)
 }
 
 function handleDelete(record) {
@@ -193,7 +194,5 @@ onMounted(async () => {
         </a-space>
       </template>
     </BasicTable>
-
-    <PostFormModal ref="postFormRef" @saved="load" />
   </div>
 </template>

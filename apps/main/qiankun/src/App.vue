@@ -11,7 +11,7 @@ const { t, locale: i18nLocale } = useI18n()
 
 const currentPath = ref(window.location.pathname)
 // 独立 Nuxt 博客站地址（可用 VITE_BLOG_URL 覆盖）
-const blogUrl = import.meta.env.VITE_BLOG_URL || 'http://localhost:3000'
+const blogUrl = import.meta.env.VITE_BLOG_URL || 'http://localhost:3001'
 
 function navigate(path: string) {
   window.history.pushState({}, '', path)
@@ -139,3 +139,10 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style>
+#__qiankun_microapp_wrapper_for_gnail_admin__ {
+  height: 100%;
+  min-height: 0;
+}
+</style>
