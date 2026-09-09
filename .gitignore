@@ -44,3 +44,7 @@ packages/*/pnpm-lock.yaml
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Nuxt
+.nuxt/
+.output/
