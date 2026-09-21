@@ -3,6 +3,7 @@ export default {
     name: 'Qiankun Main App',
     home: 'Home',
     adminApp: 'Admin App',
+    demoHub: 'Demo Hub',
     componentDocs: 'Component Docs',
     toggleLight: 'Switch to light mode',
     toggleDark: 'Switch to dark mode',

@@ -27,7 +27,7 @@ module.exports = {
     'vue/require-default-prop': 'off',
     '@typescript-eslint/no-explicit-any': 'off', // 项目现有代码使用了 any
     'no-console': [
-      'error',
+      'warn',
       {
         allow: ['error', 'warn'],
       },

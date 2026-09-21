@@ -98,6 +98,17 @@ onMounted(() => {
             >
               {{ t('app.adminApp') }}
             </button>
+            <button
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
+              :class="
+                currentPath.startsWith('/demo-hub')
+                  ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-500'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              "
+              @click="navigate('/demo-hub/')"
+            >
+              {{ t('app.demoHub') }}
+            </button>
             <a
               :href="componentDocsUrl"
               target="_blank"
@@ -151,7 +162,7 @@ onMounted(() => {
 
     <!-- Admin 子应用容器 -->
     <main
-      v-show="currentPath.startsWith('/gnail-admin')"
+      v-show="currentPath.startsWith('/gnail-admin') || currentPath.startsWith('/demo-hub')"
       id="subapp-container"
       class="flex-1 min-h-0 overflow-hidden"
     />
@@ -162,5 +173,11 @@ onMounted(() => {
 #__qiankun_microapp_wrapper_for_gnail_admin__ {
   height: 100%;
   min-height: 0;
+}
+
+#__qiankun_microapp_wrapper_for_demo_hub__ {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
 }
 </style>
