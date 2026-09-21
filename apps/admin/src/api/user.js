@@ -39,3 +39,11 @@ export function assignUserRoles(userId, roleIds) {
 export function resetUserPassword(userId, newPassword) {
   return request.put(`/users/${userId}/password`, { newPassword })
 }
+
+/** 导入用户（Excel，表单字段名需与后端 MultipartFile 参数一致） */
+export function importUsers(file) {
+  const data = new FormData()
+  data.append('file', file)
+  // 批量解析耗时可能超过默认 10s，单独放宽超时
+  return request.post('/users/import', data, { timeout: 60000 })
+}

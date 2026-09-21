@@ -14,7 +14,7 @@ const STORAGE_KEY = 'ziven-locale'
 const DEFAULT_LOCALE: LocaleCode = 'zh-CN'
 
 function load(): LocaleCode {
-  const value = localStorage.getItem(STORAGE_KEY)
+  const value = typeof localStorage === 'undefined' ? null : localStorage.getItem(STORAGE_KEY)
   return value === 'en-US' || value === 'zh-CN' ? value : DEFAULT_LOCALE
 }
 
@@ -30,9 +30,13 @@ const isZh = computed(() => locale.value === 'zh-CN')
 export function useLocale(): UseLocaleResult {
   function setLocale(value: LocaleCode, reload = false) {
     locale.value = value
-    localStorage.setItem(STORAGE_KEY, value)
-    document.documentElement.lang = value === 'zh-CN' ? 'zh-CN' : 'en'
-    if (reload) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, value)
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = value === 'zh-CN' ? 'zh-CN' : 'en'
+    }
+    if (reload && typeof window !== 'undefined') {
       window.location.reload()
     }
   }
@@ -42,7 +46,9 @@ export function useLocale(): UseLocaleResult {
   }
 
   function initLocale(): LocaleCode {
-    document.documentElement.lang = locale.value === 'zh-CN' ? 'zh-CN' : 'en'
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale.value === 'zh-CN' ? 'zh-CN' : 'en'
+    }
     return locale.value
   }
 

@@ -37,6 +37,7 @@ export default defineConfig({
   },
   server: {
     port: 8081, // 必须和主应用 entry 一致
+    strictPort: true, // 禁止回退到主应用或文档子应用端口
     cors: true, // 防止跨域问题
     host: '0.0.0.0', // 暴露内网ip
   },

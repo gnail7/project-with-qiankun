@@ -1,12 +1,14 @@
 <script setup>
-import { KeyOutlined, TeamOutlined } from '@ant-design/icons-vue'
+import { ImportOutlined, KeyOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BasicTable, OpButton, SearchContainer } from '@ziven/ui'
 import { deleteUser, getUserPage } from '@/api/user'
 import { ACCOUNT_STATUS, PERMISSIONS, USER_SEX } from '@/constants'
+import { createColumns, createSearchSchemas } from './schema'
 import AssignRoleModal from './components/AssignRoleModal.vue'
+import ImportUserModal from './components/ImportUserModal.vue'
 import ResetPwdModal from './components/ResetPwdModal.vue'
 import UserFormModal from './components/UserFormModal.vue'
 
@@ -22,60 +24,13 @@ const query = ref({})
 const userFormRef = ref()
 const assignRoleRef = ref()
 const resetPwdRef = ref()
+const importUserRef = ref()
 
 const statusOptions = ACCOUNT_STATUS.map(o => ({ ...o, label: t(o.label) }))
 const sexOptions = USER_SEX.map(o => ({ ...o, label: t(o.label) }))
 
-const searchSchemas = computed(() => [
-  {
-    field: 'userName',
-    label: t('system.user.userName'),
-    component: 'a-input',
-    componentProps: { placeholder: t('system.user.userName'), allowClear: true },
-  },
-  {
-    field: 'nickName',
-    label: t('system.user.nickName'),
-    component: 'a-input',
-    componentProps: { placeholder: t('system.user.nickName'), allowClear: true },
-  },
-  {
-    field: 'phone',
-    label: t('system.user.phone'),
-    component: 'a-input',
-    componentProps: { placeholder: t('system.user.phone'), allowClear: true },
-  },
-  {
-    field: 'status',
-    label: t('system.user.status'),
-    component: 'a-select',
-    componentProps: {
-      options: statusOptions,
-      allowClear: true,
-      placeholder: t('system.user.status'),
-    },
-  },
-])
-
-const columns = computed(() => [
-  { key: 'userName', title: t('system.user.userName'), dataIndex: 'userName' },
-  { key: 'nickName', title: t('system.user.nickName'), dataIndex: 'nickName' },
-  { key: 'phone', title: t('system.user.phone'), dataIndex: 'phone' },
-  {
-    key: 'sex',
-    title: t('system.user.sex'),
-    dataIndex: 'sex',
-    formatter: value => sexOptions.find(o => o.value === value)?.label ?? value,
-  },
-  { key: 'status', title: t('system.user.status'), dataIndex: 'status', slot: 'status' },
-  {
-    key: 'createTime',
-    title: t('system.user.createTime'),
-    dataIndex: 'createTime',
-    width: 150,
-  },
-  { key: 'action', title: t('common.action'), slot: 'action', width: 200 },
-])
+const searchSchemas = computed(() => createSearchSchemas({ t, statusOptions }))
+const columns = computed(() => createColumns({ t, sexOptions }))
 
 async function load() {
   loading.value = true
@@ -114,6 +69,10 @@ function openCreate() {
 
 function openEdit(record) {
   userFormRef.value?.open(record)
+}
+
+function openImport() {
+  importUserRef.value?.open()
 }
 
 function openAssignRole(record) {
@@ -166,13 +125,23 @@ onMounted(load)
       @refresh="load"
     >
       <template #toolbar>
-        <OpButton
-          v-permission="PERMISSIONS.USER_ADD"
-          action="add"
-          variant="solid"
-          :label="t('system.user.add')"
-          @click="openCreate"
-        />
+        <a-space>
+          <OpButton
+            v-permission="PERMISSIONS.USER_ADD"
+            action="add"
+            variant="solid"
+            :label="t('system.user.add')"
+            @click="openCreate"
+          />
+          <OpButton
+            v-permission="PERMISSIONS.USER_ADD"
+            action="import"
+            variant="solid"
+            :icon="ImportOutlined"
+            :label="t('system.user.import')"
+            @click="openImport"
+          />
+        </a-space>
       </template>
 
       <template #status="{ record }">
@@ -214,6 +183,7 @@ onMounted(load)
     </BasicTable>
 
     <UserFormModal ref="userFormRef" @saved="load" />
+    <ImportUserModal ref="importUserRef" @imported="load" />
     <AssignRoleModal ref="assignRoleRef" @saved="load" />
     <ResetPwdModal ref="resetPwdRef" />
   </div>

@@ -12,6 +12,10 @@ const { t, locale: i18nLocale } = useI18n()
 const currentPath = ref(window.location.pathname)
 // 独立 Nuxt 博客站地址（可用 VITE_BLOG_URL 覆盖）
 const blogUrl = import.meta.env.VITE_BLOG_URL || 'http://localhost:3001'
+// 独立 VitePress 文档站地址（可用 VITE_COMPONENT_DOCS_URL 覆盖）
+const componentDocsUrl =
+  import.meta.env.VITE_COMPONENT_DOCS_URL ||
+  `${window.location.protocol}//${window.location.hostname}:8083/component-docs/`
 
 function navigate(path: string) {
   window.history.pushState({}, '', path)
@@ -52,22 +56,28 @@ onMounted(() => {
     <header
       class="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors"
     >
-      <div class="max-w-6xl mx-auto flex items-center justify-between h-14 px-6">
-        <div class="flex items-center gap-3">
+      <div class="w-full max-w-7xl mx-auto flex items-center gap-6 h-16 px-5 lg:px-8">
+        <button
+          type="button"
+          class="flex items-center gap-3 shrink-0 rounded-xl px-2 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          @click="navigate('/')"
+        >
           <span
-            class="w-7 h-7 rounded-md bg-indigo-500 text-white font-bold flex items-center justify-center"
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white font-bold flex items-center justify-center shadow-sm"
           >
             Q
           </span>
-          <span class="font-bold text-zinc-900 dark:text-white transition-colors">
+          <span class="font-bold text-zinc-900 dark:text-white whitespace-nowrap transition-colors">
             {{ t('app.name') }}
           </span>
-        </div>
+        </button>
 
-        <div class="flex items-center gap-3">
-          <nav class="flex gap-1">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <nav
+            class="flex items-center gap-1 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/70 p-1 overflow-x-auto"
+          >
             <button
-              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
               :class="
                 currentPath === '/'
                   ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-500'
@@ -78,7 +88,7 @@ onMounted(() => {
               {{ t('app.home') }}
             </button>
             <button
-              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
               :class="
                 currentPath.startsWith('/gnail-admin')
                   ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-500'
@@ -89,17 +99,25 @@ onMounted(() => {
               {{ t('app.adminApp') }}
             </button>
             <a
+              :href="componentDocsUrl"
+              target="_blank"
+              rel="noopener"
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+            >
+              {{ t('app.componentDocs') }} ↗
+            </a>
+            <a
               :href="blogUrl"
               target="_blank"
               rel="noopener"
-              class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
             >
               Blog ↗
             </a>
           </nav>
 
           <!-- 语言切换（组件库 LocaleSwitch） -->
-          <span class="ml-2 text-zinc-500 dark:text-zinc-400">
+          <span class="ml-auto shrink-0 text-zinc-500 dark:text-zinc-400">
             <LocaleSwitch />
           </span>
 
@@ -131,7 +149,7 @@ onMounted(() => {
       </div>
     </main>
 
-    <!-- 子应用容器：定高（flex-1 + min-h-0），子应用以 100% 撑满并在内部滚动 -->
+    <!-- Admin 子应用容器 -->
     <main
       v-show="currentPath.startsWith('/gnail-admin')"
       id="subapp-container"

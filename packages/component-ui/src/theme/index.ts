@@ -41,12 +41,13 @@ const DEFAULT_PRIMARY_COLOR = PRIMARY_COLORS[0].color
 export const PRIMARY_COLOR = DEFAULT_PRIMARY_COLOR
 
 function loadTheme(): ThemeMode {
-  const value = localStorage.getItem(THEME_STORAGE_KEY)
+  const value = typeof localStorage === 'undefined' ? null : localStorage.getItem(THEME_STORAGE_KEY)
   return value === 'light' || value === 'dark' ? value : DEFAULT_THEME
 }
 
 function loadPrimaryColor(): string {
-  const value = localStorage.getItem(PRIMARY_STORAGE_KEY)
+  const value =
+    typeof localStorage === 'undefined' ? null : localStorage.getItem(PRIMARY_STORAGE_KEY)
   return value || DEFAULT_PRIMARY_COLOR
 }
 
@@ -64,11 +65,17 @@ const isDark = computed(() => theme.value === 'dark')
 const primaryColor = ref<string>(loadPrimaryColor())
 
 function applyTheme(value: ThemeMode) {
+  if (typeof document === 'undefined') {
+    return
+  }
   document.documentElement.classList.toggle('dark', value === 'dark')
   document.documentElement.style.colorScheme = value
 }
 
 function applyPrimaryColor(color: string) {
+  if (typeof document === 'undefined') {
+    return
+  }
   document.documentElement.style.setProperty('--z-primary', color)
   document.documentElement.style.setProperty('--z-primary-rgb', parseHexRgb(color))
   document.documentElement.style.setProperty('--z-primary-soft', `${parseHexRgb(color)} / 0.16`)
@@ -86,7 +93,9 @@ function syncThemeFromDom() {
   if (theme.value !== next) {
     theme.value = next
     // 把其它端已应用的切换持久化，避免刷新后主题回跳
-    localStorage.setItem(THEME_STORAGE_KEY, next)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(THEME_STORAGE_KEY, next)
+    }
   }
   document.documentElement.style.colorScheme = next
 }
@@ -129,13 +138,17 @@ export function useTheme(): UseThemeResult {
     if (animate) {
       animateThemeMutate(() => {
         theme.value = value
-        localStorage.setItem(THEME_STORAGE_KEY, value)
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(THEME_STORAGE_KEY, value)
+        }
         applyTheme(value)
       })
       return
     }
     theme.value = value
-    localStorage.setItem(THEME_STORAGE_KEY, value)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(THEME_STORAGE_KEY, value)
+    }
     applyTheme(value)
   }
 
@@ -145,7 +158,9 @@ export function useTheme(): UseThemeResult {
 
   function setPrimaryColor(color: string) {
     primaryColor.value = color
-    localStorage.setItem(PRIMARY_STORAGE_KEY, color)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(PRIMARY_STORAGE_KEY, color)
+    }
     applyPrimaryColor(color)
   }
 

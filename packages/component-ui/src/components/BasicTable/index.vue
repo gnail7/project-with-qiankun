@@ -29,6 +29,7 @@
       :size="size"
       :scroll="scroll"
       :custom-row="customRow"
+      @resize-column="handleResizeColumn"
     >
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === DRAG_KEY">
@@ -101,6 +102,9 @@ interface Props {
 
   draggable?: boolean
 
+  /** 开启表头列宽拖拽 */
+  resizable?: boolean
+
   total?: number
   page?: number
   pageSize?: number
@@ -125,6 +129,7 @@ const props = withDefaults(defineProps<Props>(), {
   selectable: false,
   reserveSelection: false,
   draggable: false,
+  resizable: false,
 
   total: 0,
   page: 1,
@@ -155,6 +160,14 @@ const emit = defineEmits<{
       data: any[]
     },
   ]
+
+  'column-resize': [
+    {
+      key: string | number
+      width: number
+      column: BasicColumn
+    },
+  ]
 }>()
 
 const tableRef = ref()
@@ -171,11 +184,40 @@ const currentPageSize = computed({
 
 const visibleColumns = computed(() => props.columns.filter(column => !column.hidden))
 
-const tableColumns = computed<TableColumnsType>(() => {
-  const columns = visibleColumns.value.map(column => ({
+const resizedWidths = ref<Record<string, number>>({})
+
+const DEFAULT_RESIZABLE_WIDTH = 160
+const MIN_RESIZABLE_WIDTH = 80
+
+function getColumnKey(column: BasicColumn) {
+  return column.key ?? column.dataIndex ?? ''
+}
+
+function withResizableColumn(column: BasicColumn): BasicColumn {
+  const key = getColumnKey(column)
+  const resizedWidth = key === '' ? undefined : resizedWidths.value[String(key)]
+  const resizable = props.resizable || column.resizable
+
+  if (!resizable) {
+    return {
+      ...column,
+      align: column.align || 'center',
+    }
+  }
+
+  return {
     ...column,
     align: column.align || 'center',
-  }))
+    // ant-design-vue 要求 resizable 列必须使用 number 类型的 width。
+    width:
+      resizedWidth ?? (typeof column.width === 'number' ? column.width : DEFAULT_RESIZABLE_WIDTH),
+    resizable: true,
+    minWidth: column.minWidth ?? MIN_RESIZABLE_WIDTH,
+  }
+}
+
+const tableColumns = computed<TableColumnsType>(() => {
+  const columns = visibleColumns.value.map(withResizableColumn)
 
   if (!props.draggable) {
     return columns
@@ -191,6 +233,17 @@ const tableColumns = computed<TableColumnsType>(() => {
     ...columns,
   ]
 })
+
+function handleResizeColumn(width: number, column: BasicColumn) {
+  const key = getColumnKey(column)
+
+  if (key === '') {
+    return
+  }
+
+  resizedWidths.value[String(key)] = width
+  emit('column-resize', { key, width, column })
+}
 
 const expandable = computed(() => {
   const column = props.columns.find(column => column.key === 'expandedRow')

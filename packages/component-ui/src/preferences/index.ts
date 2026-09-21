@@ -15,12 +15,12 @@ const LAYOUT_KEY = 'ziven-layout'
 const COLLAPSED_KEY = 'ziven-collapsed'
 
 function loadLayout(): LayoutMode {
-  const value = localStorage.getItem(LAYOUT_KEY)
+  const value = typeof localStorage === 'undefined' ? null : localStorage.getItem(LAYOUT_KEY)
   return value === 'top' ? 'top' : 'sidebar'
 }
 
 function loadCollapsed(): boolean {
-  return localStorage.getItem(COLLAPSED_KEY) === '1'
+  return typeof localStorage !== 'undefined' && localStorage.getItem(COLLAPSED_KEY) === '1'
 }
 
 // 模块级单例：布局模式/折叠状态全局共享并持久化
@@ -34,7 +34,9 @@ const collapsed = ref<boolean>(loadCollapsed())
 export function usePreferences(): UsePreferencesResult {
   function setLayout(value: LayoutMode) {
     layout.value = value
-    localStorage.setItem(LAYOUT_KEY, value)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LAYOUT_KEY, value)
+    }
   }
 
   function toggleLayout() {
@@ -43,7 +45,9 @@ export function usePreferences(): UsePreferencesResult {
 
   function setCollapsed(value: boolean) {
     collapsed.value = value
-    localStorage.setItem(COLLAPSED_KEY, value ? '1' : '0')
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(COLLAPSED_KEY, value ? '1' : '0')
+    }
   }
 
   function toggleCollapsed() {

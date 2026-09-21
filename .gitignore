@@ -48,3 +48,8 @@ desktop.ini
 # Nuxt
 .nuxt/
 .output/
+
+# VitePress generated files
+**/.vitepress/cache/
+**/.vitepress/dist/
+**/.vitepress/.temp/

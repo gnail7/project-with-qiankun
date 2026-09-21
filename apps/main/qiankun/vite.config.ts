@@ -32,6 +32,8 @@ export default defineConfig({
   server: {
     // 避开 admin(8081)/backend(8080)/Nuxt blog(3000)，宿主用 8082
     port: 8082,
+    // qiankun entry 使用固定端口，禁止 Vite 回退到文档子应用的 8083
+    strictPort: true,
     host: '0.0.0.0',
     cors: true,
   },

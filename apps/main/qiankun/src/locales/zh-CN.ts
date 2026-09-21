@@ -3,6 +3,7 @@ export default {
     name: 'qiankun 主应用',
     home: '首页',
     adminApp: 'Admin 子应用',
+    componentDocs: '组件文档',
     toggleLight: '切换亮色模式',
     toggleDark: '切换暗色模式',
     mfeTitle: 'qiankun 微前端',

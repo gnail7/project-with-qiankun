@@ -1,4 +1,4 @@
-// 描述所有子应用
+// 描述所有 qiankun 子应用
 export default [
   {
     name: 'gnail-admin',
