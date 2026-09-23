@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import { useTheme } from '@ziven/ui/theme'
 import App from './App.vue'
 import router from './router'
+import 'leaflet/dist/leaflet.css'
 import './style.css'
 
 let app: ReturnType<typeof createApp> | null = null

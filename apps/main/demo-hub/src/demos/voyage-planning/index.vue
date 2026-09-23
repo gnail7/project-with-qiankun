@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import type { DemoItem } from '@/types'
-import { mockRoute, updateLinkOrder } from './api'
+import {
+  GisControlPanel,
+  GisGraticuleLayer,
+  GisMap,
+  GisMarker,
+  GisPolyline,
+  GisTerminatorLayer,
+  GisTileLayer,
+  GisTimezoneLayer,
+} from '@ziven/ui/Gis'
+import type { Coordinate, GisControlLayer, MapProvider, MapTheme } from '@ziven/ui/Gis'
+import { mockRoutes, updateLinkOrder } from './api'
 import type { Waypoint } from './api'
 
 defineProps<{ demo: DemoItem }>()
@@ -14,42 +23,110 @@ type WaypointForm = Pick<
   'name' | 'lon' | 'lat' | 'speed' | 'routeType' | 'isMajor' | 'date' | 'memo' | 'stopTime'
 >
 
-const mapRef = ref<HTMLDivElement>()
-const waypoints = ref<Waypoint[]>(cloneWaypoints(mockRoute.waypoints))
+const mapControlLayers: GisControlLayer[] = [
+  {
+    id: 'route-line',
+    label: '航线',
+    icon: '━',
+    group: '航线数据',
+    description: '当前航线连线',
+  },
+  {
+    id: 'waypoints',
+    label: 'Waypoint',
+    icon: '●',
+    group: '航线数据',
+    description: '航线节点',
+  },
+  {
+    id: 'insertion-points',
+    label: '辅助插入点',
+    icon: '＋',
+    group: '航线数据',
+    description: '拖拽节点时显示',
+  },
+  {
+    id: 'timezones',
+    label: '时区',
+    icon: '◫',
+    group: '地图元素',
+    description: 'UTC 时区参考带',
+  },
+  {
+    id: 'terminator',
+    label: '晨昏线',
+    icon: '☼',
+    group: '地图元素',
+    description: '实时太阳晨昏分界线',
+  },
+  {
+    id: 'graticule',
+    label: '经纬网',
+    icon: '⊞',
+    group: '地图元素',
+    description: '动态经纬度网格',
+  },
+]
+
+const mapRef = ref<InstanceType<typeof GisMap>>()
+const routeWaypoints = ref<Record<string, Waypoint[]>>(
+  Object.fromEntries(
+    mockRoutes.map(route => [route.routeId, cloneWaypoints(route.waypoints)]),
+  ) as Record<string, Waypoint[]>,
+)
+const activeRouteId = ref(mockRoutes[0].routeId)
+const currentRoute = computed(
+  () => mockRoutes.find(route => route.routeId === activeRouteId.value) ?? mockRoutes[0],
+)
+const waypoints = computed(() => routeWaypoints.value[activeRouteId.value] ?? [])
+const draggingPositions = ref<Record<string, Coordinate>>({})
+const insertionMarkers = ref<Array<{ id: string; position: Coordinate; insertIndex: number }>>([])
+const draggingInsertion = ref<{
+  id: string
+  position: Coordinate
+  insertIndex: number
+} | null>(null)
 const selectedId = ref<string | null>(waypoints.value[0]?.id ?? null)
 const editingId = ref<string | null>(null)
 const editingIsNew = ref(false)
 const dialogVisible = ref(false)
 const addMode = ref(false)
+const measureActive = ref(false)
+const layerVisibility = ref<Record<string, boolean>>({
+  'route-line': true,
+  waypoints: true,
+  'insertion-points': true,
+  timezones: false,
+  terminator: false,
+  graticule: false,
+})
+const activeMapProvider = ref<MapProvider>('openfreemap')
+const activeMapTheme = ref<MapTheme>('standard')
 const saving = ref(false)
 const formError = ref('')
 const form = ref<WaypointForm>(createForm(waypoints.value[0]))
+let insertionAnchorIndex: number | null = null
 
-let map: L.Map | null = null
-let markerLayer: L.LayerGroup | null = null
-let routeLayer: L.Polyline | null = null
-let resizeObserver: ResizeObserver | null = null
-let insertionMarkers: Array<{ marker: L.Marker; insertIndex: number }> = []
-
-onMounted(() => {
-  map = L.map(mapRef.value!, { zoomControl: false }).setView([31.5, 123], 5)
-  L.control.zoom({ position: 'bottomright' }).addTo(map)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map)
-  markerLayer = L.layerGroup().addTo(map)
-  map.on('click', handleMapClick)
-  renderMap()
-  resizeObserver = new ResizeObserver(() => map?.invalidateSize())
-  resizeObserver.observe(mapRef.value!)
+watch(activeRouteId, () => {
+  draggingPositions.value = {}
+  clearInsertionMarkers()
+  addMode.value = false
+  dialogVisible.value = false
+  editingId.value = null
+  editingIsNew.value = false
+  formError.value = ''
+  selectedId.value = waypoints.value[0]?.id ?? null
+  void nextTick(() => fitRoute())
 })
 
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect()
-  map?.remove()
-  map = null
-})
+const displayWaypoints = computed(() =>
+  waypoints.value.map(waypoint => {
+    const position = draggingPositions.value[waypoint.id]
+    return position ? { ...waypoint, lat: position.lat, lon: position.lng } : waypoint
+  }),
+)
+
+const routePoints = computed<Coordinate[]>(() => getRoutePointsWithDraggingInsertion())
 
 function cloneWaypoints(items: Waypoint[]) {
   return items.map(item => ({ ...item }))
@@ -73,126 +150,61 @@ function makeId() {
   return `wp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
 }
 
-function createMarkerIcon(index: number, selected: boolean) {
-  return L.divIcon({
-    className: 'voyage-plan__marker-wrap',
-    html: `<span class="voyage-plan__marker ${selected ? 'is-selected' : ''}">${index + 1}</span>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  })
-}
-
-function createInsertionMarkerIcon() {
-  return L.divIcon({
-    className: 'voyage-plan__insertion-wrap',
-    html: '<span class="voyage-plan__insertion-marker">＋</span>',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-  })
-}
-
 function clearInsertionMarkers() {
-  if (markerLayer) insertionMarkers.forEach(({ marker }) => markerLayer!.removeLayer(marker))
-  insertionMarkers = []
+  insertionMarkers.value = []
+  draggingInsertion.value = null
+  insertionAnchorIndex = null
 }
 
-function renderMap() {
-  if (!map || !markerLayer) return
-  clearInsertionMarkers()
-  markerLayer.clearLayers()
-  routeLayer?.removeFrom(map)
-
-  const points = waypoints.value.map(item => [item.lat, item.lon] as [number, number])
-  if (points.length > 1) {
-    routeLayer = L.polyline(points, {
-      color: '#7564ef',
-      weight: 3,
-      opacity: 0.82,
-      dashArray: '7 7',
-    }).addTo(map)
-  }
-
-  waypoints.value.forEach((waypoint, index) => {
-    const marker = L.marker([waypoint.lat, waypoint.lon], {
-      icon: createMarkerIcon(index, selectedId.value === waypoint.id),
-      draggable: true,
-      bubblingMouseEvents: false,
-      title: waypoint.name,
-    })
-    marker.on('click', () => openEditor(waypoint.id))
-    marker.on('contextmenu', event => {
-      event.originalEvent.preventDefault()
-      removeWaypoint(waypoint.id)
-    })
-    marker.on('dragstart', event => {
-      createInsertionMarkers(waypoint.id, event.target as L.Marker)
-    })
-    marker.on('drag', event => {
-      const position = (event.target as L.Marker).getLatLng()
-      updateRoutePath(waypoint.id, position)
-      updateInsertionMarkers(position)
-    })
-    marker.on('dragend', event => {
-      const position = (event.target as L.Marker).getLatLng()
-      updateWaypoint(
-        waypoint.id,
-        { lat: roundCoordinate(position.lat), lon: roundCoordinate(position.lng) },
-        false,
-      )
-      updateRoutePath(waypoint.id, position)
-      updateInsertionMarkers(position)
-    })
-    marker.addTo(markerLayer!)
-  })
-}
-
-function createInsertionMarkers(id: string, currentMarker: L.Marker) {
-  if (!markerLayer) return
+function createInsertionMarkers(id: string, current: Coordinate) {
   clearInsertionMarkers()
 
   const index = waypoints.value.findIndex(item => item.id === id)
   if (index < 0) return
+  insertionAnchorIndex = index
 
-  const current = currentMarker.getLatLng()
   const previous = waypoints.value[index - 1]
   const next = waypoints.value[index + 1]
   const candidates = [
     previous && {
-      position: L.latLng((previous.lat + current.lat) / 2, (previous.lon + current.lng) / 2),
+      id: `${id}-before`,
+      position: { lat: (previous.lat + current.lat) / 2, lng: (previous.lon + current.lng) / 2 },
       insertIndex: index,
     },
     next && {
-      position: L.latLng((next.lat + current.lat) / 2, (next.lon + current.lng) / 2),
+      id: `${id}-after`,
+      position: { lat: (current.lat + next.lat) / 2, lng: (current.lng + next.lon) / 2 },
       insertIndex: index + 1,
     },
-  ].filter(Boolean) as Array<{ position: L.LatLng; insertIndex: number }>
+  ].filter(Boolean) as Array<{ id: string; position: Coordinate; insertIndex: number }>
+  insertionMarkers.value = candidates
+}
 
-  candidates.forEach(candidate => {
-    const marker = L.marker(candidate.position, {
-      icon: createInsertionMarkerIcon(),
-      draggable: true,
-      bubblingMouseEvents: false,
-      title: '拖动此点插入 Waypoint',
-    })
-    marker.on('dragend', event => {
-      const position = (event.target as L.Marker).getLatLng()
-      insertWaypoint(candidate.insertIndex, position)
-    })
-    marker.addTo(markerLayer!)
-    insertionMarkers.push({ marker, insertIndex: candidate.insertIndex })
+function updateInsertionMarkers(current: Coordinate) {
+  if (insertionAnchorIndex == null) return
+  const anchorIndex = insertionAnchorIndex
+  const previous = waypoints.value[anchorIndex - 1]
+  const next = waypoints.value[anchorIndex + 1]
+
+  insertionMarkers.value = insertionMarkers.value.map(insertion => {
+    const { insertIndex } = insertion
+    if (insertIndex === anchorIndex && previous) {
+      return {
+        ...insertion,
+        position: { lat: (previous.lat + current.lat) / 2, lng: (previous.lon + current.lng) / 2 },
+      }
+    }
+    if (insertIndex === anchorIndex + 1 && next) {
+      return {
+        ...insertion,
+        position: { lat: (current.lat + next.lat) / 2, lng: (current.lng + next.lon) / 2 },
+      }
+    }
+    return insertion
   })
 }
 
-function updateInsertionMarkers(current: L.LatLng) {
-  insertionMarkers.forEach(({ marker, insertIndex }) => {
-    const before = waypoints.value[insertIndex - 1]
-    const after = waypoints.value[insertIndex]
-    if (!before || !after) return
-    marker.setLatLng([(before.lat + current.lat) / 2, (before.lon + current.lng) / 2])
-  })
-}
-
-function insertWaypoint(index: number, position: L.LatLng) {
+function insertWaypoint(index: number, position: Coordinate) {
   const waypoint: Waypoint = {
     id: makeId(),
     name: `Waypoint ${waypoints.value.length + 1}`,
@@ -206,38 +218,72 @@ function insertWaypoint(index: number, position: L.LatLng) {
   }
   waypoints.value.splice(Math.max(0, Math.min(index, waypoints.value.length)), 0, waypoint)
   selectedId.value = waypoint.id
-  renderMap()
-  openEditor(waypoint.id)
+  clearInsertionMarkers()
+}
+
+function getRoutePointsWithDraggingInsertion() {
+  const points = displayWaypoints.value.map(waypoint => ({
+    lat: waypoint.lat,
+    lng: waypoint.lon,
+  }))
+  const insertion = draggingInsertion.value
+  if (!insertion) return points
+
+  points.splice(insertion.insertIndex, 0, insertion.position)
+  return points
+}
+
+function handleInsertionDragStart(id: string, position: Coordinate) {
+  const insertion = insertionMarkers.value.find(item => item.id === id)
+  if (!insertion) return
+  draggingInsertion.value = { id, position, insertIndex: insertion.insertIndex }
+}
+
+function handleInsertionDrag(id: string, position: Coordinate) {
+  const insertion = insertionMarkers.value.find(item => item.id === id)
+  if (!insertion) return
+  draggingInsertion.value = { id, position, insertIndex: insertion.insertIndex }
+  insertionMarkers.value = insertionMarkers.value.map(item =>
+    item.id === id ? { ...item, position } : item,
+  )
 }
 
 function roundCoordinate(value: number) {
   return Number(value.toFixed(6))
 }
 
-function updateWaypoint(id: string, patch: Partial<Waypoint>, rerender = true) {
+function updateWaypoint(id: string, patch: Partial<Waypoint>) {
   const item = waypoints.value.find(waypoint => waypoint.id === id)
   if (!item) return
   Object.assign(item, patch)
   selectedId.value = id
-  if (rerender) renderMap()
 }
 
-function updateRoutePath(id: string, position: L.LatLng) {
-  const index = waypoints.value.findIndex(item => item.id === id)
-  if (index >= 0) {
-    const points = waypoints.value.map(item => [item.lat, item.lon] as [number, number])
-    points[index] = [position.lat, position.lng]
-    routeLayer?.setLatLngs(points)
-  }
+function handleWaypointDragStart(id: string, position: Coordinate) {
+  createInsertionMarkers(id, position)
 }
 
-function handleMapClick(event: L.LeafletMouseEvent) {
+function handleWaypointDrag(id: string, position: Coordinate) {
+  draggingPositions.value = { ...draggingPositions.value, [id]: position }
+  updateInsertionMarkers(position)
+}
+
+function handleWaypointDragEnd(id: string, position: Coordinate) {
+  updateWaypoint(id, { lat: roundCoordinate(position.lat), lon: roundCoordinate(position.lng) })
+  const nextPositions = { ...draggingPositions.value }
+  delete nextPositions[id]
+  draggingPositions.value = nextPositions
+  updateInsertionMarkers(position)
+}
+
+function handleMapClick(position: Coordinate) {
+  if (measureActive.value) return
   if (!addMode.value) return
   const waypoint: Waypoint = {
     id: makeId(),
     name: `Waypoint ${waypoints.value.length + 1}`,
-    lon: roundCoordinate(event.latlng.lng),
-    lat: roundCoordinate(event.latlng.lat),
+    lon: roundCoordinate(position.lng),
+    lat: roundCoordinate(position.lat),
     speed: 12,
     routeType: 'RL',
     memo: '',
@@ -247,7 +293,7 @@ function handleMapClick(event: L.LeafletMouseEvent) {
   waypoints.value.push(waypoint)
   selectedId.value = waypoint.id
   addMode.value = false
-  renderMap()
+  clearInsertionMarkers()
   openEditor(waypoint.id, true)
 }
 
@@ -260,12 +306,11 @@ function openEditor(id: string, isNew = false) {
   form.value = createForm(waypoint)
   formError.value = ''
   dialogVisible.value = true
-  renderMap()
 }
 
 function selectWaypoint(waypoint: Waypoint) {
   selectedId.value = waypoint.id
-  map?.flyTo([waypoint.lat, waypoint.lon], Math.max(map.getZoom(), 6), { duration: 0.45 })
+  mapRef.value?.flyTo({ lat: waypoint.lat, lng: waypoint.lon }, 6)
   openEditor(waypoint.id)
 }
 
@@ -308,7 +353,7 @@ async function saveWaypoint() {
   saving.value = true
   try {
     await updateLinkOrder(
-      mockRoute.routeId,
+      currentRoute.value.routeId,
       waypoints.value.map(waypoint => [waypoint.lon, waypoint.lat, waypoint.speed, waypoint.memo]),
     )
     dialogVisible.value = false
@@ -329,20 +374,19 @@ function removeWaypoint(id: string, closeDialog = true) {
     editingId.value = null
     editingIsNew.value = false
   }
-  renderMap()
+  const nextPositions = { ...draggingPositions.value }
+  delete nextPositions[id]
+  draggingPositions.value = nextPositions
+  clearInsertionMarkers()
 }
 
 function fitRoute() {
-  if (!map || !waypoints.value.length) return
-  const bounds = L.latLngBounds(
-    waypoints.value.map(item => [item.lat, item.lon] as [number, number]),
-  )
-  map.fitBounds(bounds, { padding: [35, 35], maxZoom: 7 })
+  if (!routePoints.value.length) return
+  mapRef.value?.fitBounds(routePoints.value)
 }
 
 function toggleAddMode() {
   addMode.value = !addMode.value
-  nextTick(() => map?.invalidateSize())
 }
 </script>
 
@@ -350,10 +394,18 @@ function toggleAddMode() {
   <div class="voyage-plan">
     <div class="voyage-plan__toolbar">
       <div>
-        <strong>航线 Waypoint</strong>
-        <span>{{ waypoints.length }} 个节点 · 拖动节点显示插入点 · 右键删除</span>
+        <strong>{{ currentRoute.name }} · Waypoint</strong>
+        <span>{{ currentRoute.description }} · {{ waypoints.length }} 个节点 · 右键删除</span>
       </div>
       <div class="voyage-plan__toolbar-actions">
+        <label class="voyage-plan__route-switcher">
+          <span>当前航线</span>
+          <select v-model="activeRouteId" aria-label="切换航线">
+            <option v-for="route in mockRoutes" :key="route.routeId" :value="route.routeId">
+              {{ route.routeId }} · {{ route.name }}
+            </option>
+          </select>
+        </label>
         <button
           class="voyage-plan__button"
           :class="{ 'is-active': addMode }"
@@ -371,7 +423,7 @@ function toggleAddMode() {
       <aside class="voyage-plan__sidebar">
         <div class="voyage-plan__sidebar-heading">
           <div>
-            <span class="voyage-plan__eyebrow">ROUTE {{ mockRoute.routeId }}</span>
+            <span class="voyage-plan__eyebrow">ROUTE {{ currentRoute.routeId }}</span>
             <h3>Waypoint 列表</h3>
           </div>
           <span class="voyage-plan__count">{{ waypoints.length }}</span>
@@ -401,7 +453,65 @@ function toggleAddMode() {
       </aside>
 
       <div class="voyage-plan__map-wrap">
-        <div ref="mapRef" class="voyage-plan__map" :class="{ 'is-add-mode': addMode }"></div>
+        <GisMap
+          ref="mapRef"
+          class="voyage-plan__map"
+          :class="{ 'is-add-mode': addMode }"
+          :center="{ lat: 31.5, lng: 123 }"
+          :zoom="5"
+          :min-zoom="3"
+          :max-zoom="18"
+          @click="handleMapClick"
+        >
+          <GisTileLayer id="route-base-map" :provider="activeMapProvider" :theme="activeMapTheme" />
+          <GisTimezoneLayer :visible="layerVisibility.timezones" />
+          <GisTerminatorLayer :visible="layerVisibility.terminator" />
+          <GisGraticuleLayer :visible="layerVisibility.graticule" />
+          <GisPolyline
+            v-if="layerVisibility['route-line']"
+            id="route-line"
+            :points="routePoints"
+            theme="primary"
+          />
+          <template v-if="layerVisibility.waypoints">
+            <GisMarker
+              v-for="(waypoint, index) in displayWaypoints"
+              :id="waypoint.id"
+              :key="waypoint.id"
+              :position="{ lat: waypoint.lat, lng: waypoint.lon }"
+              variant="waypoint"
+              :label="index + 1"
+              :selected="selectedId === waypoint.id"
+              draggable
+              @click="openEditor(waypoint.id)"
+              @contextmenu="removeWaypoint(waypoint.id)"
+              @dragstart="handleWaypointDragStart(waypoint.id, $event)"
+              @drag="handleWaypointDrag(waypoint.id, $event)"
+              @dragend="handleWaypointDragEnd(waypoint.id, $event)"
+            />
+          </template>
+          <template v-if="layerVisibility['insertion-points']">
+            <GisMarker
+              v-for="insertion in insertionMarkers"
+              :id="insertion.id"
+              :key="insertion.id"
+              :position="insertion.position"
+              variant="insertion"
+              label="＋"
+              draggable
+              @dragstart="handleInsertionDragStart(insertion.id, $event)"
+              @drag="handleInsertionDrag(insertion.id, $event)"
+              @dragend="insertWaypoint(insertion.insertIndex, $event)"
+            />
+          </template>
+          <GisControlPanel
+            v-model:layer-visibility="layerVisibility"
+            v-model:measure-active="measureActive"
+            v-model:map-provider="activeMapProvider"
+            v-model:map-theme="activeMapTheme"
+            :layers="mapControlLayers"
+          />
+        </GisMap>
         <div class="voyage-plan__map-hint" :class="{ 'is-visible': addMode }">
           <span>＋</span> 点击地图位置新增 Waypoint
         </div>
@@ -521,7 +631,31 @@ function toggleAddMode() {
 }
 .voyage-plan__toolbar-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+.voyage-plan__route-switcher {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--hub-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.voyage-plan__route-switcher select {
+  max-width: 190px;
+  padding: 8px 26px 8px 9px;
+  border: 1px solid var(--hub-line);
+  border-radius: 8px;
+  outline: 0;
+  color: var(--hub-text);
+  background: var(--hub-surface-soft);
+  cursor: pointer;
+  font-size: 10px;
+}
+.voyage-plan__route-switcher select:focus {
+  border-color: var(--hub-primary);
+  box-shadow: 0 0 0 3px var(--hub-primary-soft);
 }
 .voyage-plan__button {
   padding: 9px 12px;
@@ -557,6 +691,7 @@ function toggleAddMode() {
 }
 .voyage-plan__content {
   display: grid;
+  height: 590px;
   min-height: 590px;
   grid-template-columns: 268px minmax(0, 1fr);
 }
@@ -683,13 +818,14 @@ function toggleAddMode() {
 }
 .voyage-plan__map-wrap {
   position: relative;
+  height: 590px;
   min-width: 0;
   min-height: 590px;
 }
 .voyage-plan__map {
   width: 100%;
   height: 100%;
-  min-height: 590px;
+  min-height: 0;
   background: #dae3e7;
 }
 .voyage-plan__map.is-add-mode {
@@ -921,7 +1057,21 @@ function toggleAddMode() {
     align-items: flex-start;
     flex-direction: column;
   }
+  .voyage-plan__toolbar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .voyage-plan__route-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .voyage-plan__route-switcher select {
+    flex: 1;
+    max-width: none;
+  }
   .voyage-plan__content {
+    height: auto;
+    min-height: 0;
     grid-template-columns: 1fr;
   }
   .voyage-plan__sidebar {
@@ -935,6 +1085,7 @@ function toggleAddMode() {
   }
   .voyage-plan__map-wrap,
   .voyage-plan__map {
+    height: 440px;
     min-height: 440px;
   }
 }

@@ -8,6 +8,7 @@ const components = fs
   .readdirSync(componentsDir, { withFileTypes: true })
   .filter(item => item.isDirectory())
   .map(item => item.name)
+  .filter(name => name !== 'Gis')
   .sort()
 
 const modules = ['theme', 'locale', 'preferences']

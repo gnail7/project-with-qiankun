@@ -57,6 +57,10 @@ export default defineConfig({
             { text: 'BasicLayout 基础布局', link: '/components/basic-layout' },
           ],
         },
+        {
+          text: 'GIS 组件',
+          items: [{ text: 'GisMap 地图与控制面板', link: '/components/gis-map' }],
+        },
       ],
     },
     socialLinks: [],
