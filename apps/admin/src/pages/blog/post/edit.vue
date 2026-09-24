@@ -150,7 +150,7 @@ async function handlePublish(publishData) {
 </script>
 
 <template>
-  <div class="flex flex-col h-full min-h-0">
+  <div class="post-editor-page flex flex-col h-full min-h-0">
     <div class="flex items-start gap-3 mb-4 shrink-0">
       <a-button class="shrink-0" @click="goBack">
         <template #icon>
@@ -172,12 +172,14 @@ async function handlePublish(publishData) {
       </div>
     </div>
 
-    <div class="flex-1 min-h-0 overflow-hidden">
+    <div class="post-editor__body flex-1 min-h-0 overflow-hidden">
       <MdEditor
         v-model="form.content"
+        class="post-editor__editor"
         :theme="isDark ? 'dark' : 'light'"
-        :height="'100%'"
-        :style="{ minHeight: '520px' }"
+        :height="'calc(100vh - 210px)'"
+        :style="{ minHeight: '640px' }"
+        :page-fullscreen="true"
         :language="'zh-CN'"
         :preview-theme="isDark ? 'github' : 'github'"
       />
@@ -193,3 +195,27 @@ async function handlePublish(publishData) {
     />
   </div>
 </template>
+
+<style scoped>
+.post-editor__body {
+  min-height: 640px;
+}
+
+.post-editor__editor {
+  min-height: 640px;
+}
+
+@media (max-height: 820px) {
+  .post-editor__body,
+  .post-editor__editor {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .post-editor__body,
+  .post-editor__editor {
+    min-height: 480px;
+  }
+}
+</style>
