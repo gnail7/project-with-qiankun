@@ -1,0 +1,109 @@
+.product-card {
+  min-width: 0;
+}
+
+.product-card__visual {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #ece9e1;
+  cursor: pointer;
+  text-align: left;
+}
+
+.product-card__visual :deep(.product-artwork) {
+  min-height: 250px;
+  transition: transform 350ms ease;
+}
+
+.product-card__visual:hover :deep(.product-artwork) {
+  transform: scale(1.025);
+}
+
+.product-card__visual:disabled {
+  cursor: default;
+}
+
+.product-card__visual:disabled:hover :deep(.product-artwork) {
+  transform: none;
+}
+
+.product-card__arrow,
+.product-card__unavailable {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid rgb(37 49 41 / 15%);
+  border-radius: 50%;
+  background: rgb(250 249 246 / 88%);
+  color: #26352b;
+  font-size: 14px;
+}
+
+.product-card__unavailable {
+  width: auto;
+  padding: 0 10px;
+  border-radius: 20px;
+  color: #777d74;
+  font-size: 9px;
+}
+
+.product-card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+  color: #8b8f87;
+  font-size: 8px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.product-card__meta span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-card__title {
+  display: block;
+  max-width: 100%;
+  margin: 8px 0 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #29332c;
+  cursor: pointer;
+  font-family: Georgia, 'Noto Serif SC', serif;
+  font-size: 18px;
+  text-align: left;
+}
+
+.product-card__title:disabled {
+  cursor: default;
+}
+
+.product-card p {
+  display: -webkit-box;
+  min-height: 33px;
+  margin: 0 0 11px;
+  overflow: hidden;
+  color: #81867e;
+  font-size: 10px;
+  line-height: 1.65;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.product-card > strong {
+  color: #354438;
+  font-size: 12px;
+  font-weight: 600;
+}

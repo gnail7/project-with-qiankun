@@ -2,6 +2,8 @@
 const demoHubEntry =
   import.meta.env.VITE_DEMO_HUB_URL ||
   `${window.location.protocol}//${window.location.hostname}:8086/`
+const mallEntry =
+  import.meta.env.VITE_MALL_URL || `${window.location.protocol}//${window.location.hostname}:8087/`
 
 export default [
   {
@@ -16,5 +18,11 @@ export default [
     entry: demoHubEntry,
     container: '#subapp-container',
     activeRule: '/demo-hub',
+  },
+  {
+    name: 'mall',
+    entry: mallEntry,
+    container: '#subapp-container',
+    activeRule: '/mall',
   },
 ]

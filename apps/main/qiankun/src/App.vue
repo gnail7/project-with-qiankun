@@ -18,9 +18,9 @@ const componentDocsUrl =
   `${window.location.protocol}//${window.location.hostname}:8083/component-docs/`
 
 function navigate(path: string) {
-  window.history.pushState({}, '', path)
-  currentPath.value = path
-  window.dispatchEvent(new PopStateEvent('popstate'))
+  const targetUrl = new URL(path, window.location.origin)
+  window.history.pushState({}, '', targetUrl)
+  currentPath.value = targetUrl.pathname
 }
 
 // 主题由组件库 useTheme 管理（localStorage 持久化，默认 dark，切换即刷新）
@@ -109,6 +109,17 @@ onMounted(() => {
             >
               {{ t('app.demoHub') }}
             </button>
+            <button
+              class="px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
+              :class="
+                currentPath.startsWith('/mall')
+                  ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-500'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              "
+              @click="navigate('/mall/')"
+            >
+              商城
+            </button>
             <a
               :href="componentDocsUrl"
               target="_blank"
@@ -162,7 +173,11 @@ onMounted(() => {
 
     <!-- Admin 子应用容器 -->
     <main
-      v-show="currentPath.startsWith('/gnail-admin') || currentPath.startsWith('/demo-hub')"
+      v-show="
+        currentPath.startsWith('/gnail-admin') ||
+        currentPath.startsWith('/demo-hub') ||
+        currentPath.startsWith('/mall')
+      "
       id="subapp-container"
       class="flex-1 min-h-0 overflow-hidden"
     />
@@ -176,6 +191,12 @@ onMounted(() => {
 }
 
 #__qiankun_microapp_wrapper_for_demo_hub__ {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+#__qiankun_microapp_wrapper_for_mall__ {
   height: 100%;
   min-height: 0;
   overflow: auto;

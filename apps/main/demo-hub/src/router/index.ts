@@ -1,14 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import DemoDetailView from '@/views/DemoDetailView.vue'
 import DemoHubView from '@/views/DemoHubView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
-function getBasePath() {
-  return window.location.pathname.startsWith('/demo-hub') ? '/demo-hub/' : '/'
-}
-
 const router = createRouter({
-  history: createWebHistory(getBasePath()),
+  history: createWebHistory(qiankunWindow.__POWERED_BY_QIANKUN__ ? '/demo-hub/' : '/'),
   routes: [
     {
       path: '/',

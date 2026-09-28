@@ -1,0 +1,144 @@
+.auth-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgb(23 27 26 / 42%);
+  backdrop-filter: blur(8px);
+}
+
+.auth-dialog {
+  position: relative;
+  width: min(100%, 440px);
+  padding: 42px;
+  border: 1px solid #e8e5df;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 30px 90px rgb(15 23 42 / 18%);
+}
+
+.auth-dialog__close {
+  position: absolute;
+  top: 17px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: #5c615d;
+  cursor: pointer;
+  font-size: 26px;
+}
+
+.auth-dialog__eyebrow {
+  color: #7c806f;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.auth-dialog h2 {
+  margin: 14px 0 8px;
+  color: #19211e;
+  font-family: Georgia, 'Noto Serif SC', serif;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.auth-dialog > p {
+  margin: 0;
+  color: #7d817c;
+  font-size: 13px;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 28px 0 22px;
+  border-bottom: 1px solid #e9e7e2;
+}
+
+.auth-tabs button {
+  padding: 11px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #8a8d88;
+  cursor: pointer;
+  font: inherit;
+}
+
+.auth-tabs button.is-active {
+  border-color: #1d2f27;
+  color: #1d2f27;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 8px;
+  color: #424944;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-form input {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #e5e4de;
+  border-radius: 4px;
+  outline: none;
+  background: #fcfbf9;
+  color: #202722;
+  font: inherit;
+  font-weight: 400;
+}
+
+.auth-form input:focus {
+  border-color: #758477;
+  box-shadow: 0 0 0 3px rgb(117 132 119 / 12%);
+}
+
+.auth-form__error {
+  margin: 0;
+  color: #b44838;
+  font-size: 12px;
+}
+
+.auth-form__submit {
+  min-height: 48px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: #20352b;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-form__submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.auth-dialog > small {
+  display: block;
+  margin-top: 22px;
+  color: #999b96;
+  font-size: 10px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .auth-dialog {
+    padding: 36px 24px 28px;
+  }
+}
