@@ -2,3 +2,8 @@ packages:
   - 'apps/*'
   - 'apps/main/*'
   - 'packages/*'
+
+packageExtensions:
+  'oxc-parser@0.143.0':
+    optionalDependencies:
+      '@oxc-parser/binding-wasm32-wasi': 0.143.0

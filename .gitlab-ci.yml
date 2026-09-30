@@ -1,0 +1,19 @@
+stages:
+  - check
+
+frontend-check:
+  stage: check
+
+  image: node:24
+
+  before_script:
+    - corepack enable
+    - pnpm install --frozen-lockfile
+
+  script:
+    - pnpm lint
+    - pnpm type-check
+    - pnpm build
+
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
